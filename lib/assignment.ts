@@ -11,14 +11,24 @@ type AssignmentResult = {
 }
 
 export async function autoAssignEntries(liveType: LiveType): Promise<AssignmentResult> {
+  // Check if time restrictions should be disabled (for testing/development)
+  const disableTimeRestriction = process.env.NODE_ENV === 'test' || 
+                                process.env.DISABLE_TIME_RESTRICTION === 'true'
+  
+  const whereClause: any = {
+    liveType
+  }
+  
+  // Only apply time restrictions in production environment
+  if (!disableTimeRestriction) {
+    whereClause.createdAt = {
+      gte: new Date(new Date().setHours(22, 0, 0, 0)),
+      lt: new Date(new Date().setHours(22, 30, 0, 0))
+    }
+  }
+  
   const entries = await prisma.entry.findMany({
-    where: {
-      liveType,
-      createdAt: {
-        gte: new Date(new Date().setHours(22, 0, 0, 0)),
-        lt: new Date(new Date().setHours(22, 30, 0, 0))
-      }
-    },
+    where: whereClause,
     orderBy: {
       timestamp: 'asc'
     }
