@@ -11,9 +11,13 @@ type AssignmentResult = {
 }
 
 export async function autoAssignEntries(liveType: LiveType): Promise<AssignmentResult> {
+  console.log('🔍 Starting assignment for liveType:', liveType)
+  
   // Check if time restrictions should be disabled (for testing/development)
   const disableTimeRestriction = process.env.NODE_ENV === 'test' || 
                                 process.env.DISABLE_TIME_RESTRICTION === 'true'
+  
+  console.log('⏰ Time restriction disabled:', disableTimeRestriction)
   
   const whereClause: any = {
     liveType
@@ -45,6 +49,19 @@ export async function autoAssignEntries(liveType: LiveType): Promise<AssignmentR
       assignments: true
     }
   })
+  
+  console.log('📊 Found entries:', entries.length)
+  console.log('🎭 Found lives:', lives.length)
+  
+  // Debug: Show live dates format
+  lives.forEach(live => {
+    const liveDate = live.date.toLocaleDateString('ja-JP', {
+      month: 'long',
+      day: 'numeric',
+      weekday: 'short'
+    }).replace('2025年', '')
+    console.log('📅 Live date formatted:', liveDate, 'from', live.date)
+  })
 
   const result: AssignmentResult = {
     assignments: [],
@@ -63,6 +80,8 @@ export async function autoAssignEntries(liveType: LiveType): Promise<AssignmentR
   })
 
   for (const entry of entries) {
+    console.log('🎪 Processing entry:', entry.name1, 'preferences:', [entry.preference1_1, entry.preference1_2, entry.preference1_3].filter(Boolean))
+    
     let assigned1 = false
     let assigned2 = false
 
@@ -75,13 +94,14 @@ export async function autoAssignEntries(liveType: LiveType): Promise<AssignmentR
     for (const pref of preferences1) {
       if (assigned1) break
 
-      const live = lives.find(l => 
-        l.date.toLocaleDateString('ja-JP', {
-          month: 'numeric',
+      const live = lives.find(l => {
+        const liveDate = l.date.toLocaleDateString('ja-JP', {
+          month: 'long',
           day: 'numeric',
           weekday: 'short'
-        }) === pref
-      )
+        }).replace('2025年', '')
+        return liveDate === pref
+      })
 
       if (!live) continue
 
@@ -116,13 +136,14 @@ export async function autoAssignEntries(liveType: LiveType): Promise<AssignmentR
       for (const pref of preferences2) {
         if (assigned2) break
 
-        const live = lives.find(l => 
-          l.date.toLocaleDateString('ja-JP', {
-            month: 'numeric',
+        const live = lives.find(l => {
+          const liveDate = l.date.toLocaleDateString('ja-JP', {
+            month: 'long',
             day: 'numeric',
             weekday: 'short'
-          }) === pref
-        )
+          }).replace('2025年', '')
+          return liveDate === pref
+        })
 
         if (!live) continue
 

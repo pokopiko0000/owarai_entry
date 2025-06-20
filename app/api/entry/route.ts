@@ -5,9 +5,13 @@ export async function POST(request: NextRequest) {
   try {
     const data = await request.json()
     
-    // 開発環境では時間制限をスキップ
-    if (process.env.NODE_ENV === 'production') {
-      const now = new Date()
+    // テスト環境用の時間制限チェック
+    const now = new Date()
+    const testDate = new Date('2025-06-20T17:50:00')
+    const testEndDate = new Date('2025-06-20T19:00:00')
+    
+    // テスト時間内またはNODE_ENVがdevelopmentの場合は許可
+    if (process.env.NODE_ENV === 'production' && !(now >= testDate && now < testEndDate)) {
       const day = now.getDate()
       const hour = now.getHours()
       const minute = now.getMinutes()
@@ -41,8 +45,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, id: entry.id })
   } catch (error) {
     console.error('Entry creation error:', error)
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      data: data
+    })
     return NextResponse.json(
-      { error: 'エントリーの作成に失敗しました' },
+      { 
+        error: 'エントリーの作成に失敗しました',
+        details: error instanceof Error ? error.message : String(error)
+      },
       { status: 500 }
     )
   }

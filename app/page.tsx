@@ -36,44 +36,98 @@ export default function EntryPage() {
     email: '',
     liveType: 'KUCHIBE'
   })
-  const [currentTime, setCurrentTime] = useState(new Date())
+  const [currentTime, setCurrentTime] = useState<Date | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isEntryOpen, setIsEntryOpen] = useState(false)
   const [dates, setDates] = useState<string[]>([])
+  const [showForm, setShowForm] = useState(false)
+  const [timeUntilOpen, setTimeUntilOpen] = useState('')
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
+    setCurrentTime(new Date())
+    
     const timer = setInterval(() => {
-      setCurrentTime(new Date())
+      const now = new Date()
+      setCurrentTime(now)
+      
+      // テスト用: 6月20日の17:50-19:00をエントリー可能時間とする
+      const testDate = new Date('2025-06-20T17:50:00')
+      const testEndDate = new Date('2025-06-20T19:00:00')
+      
+      if (now >= testDate && now < testEndDate) {
+        setIsEntryOpen(true)
+        setTimeUntilOpen('')
+      } else if (now < testDate) {
+        setIsEntryOpen(false)
+        // カウントダウン表示
+        const diff = testDate.getTime() - now.getTime()
+        const hours = Math.floor(diff / (1000 * 60 * 60))
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000)
+        setTimeUntilOpen(`${hours}時間${minutes}分${seconds}秒`)
+      } else {
+        setIsEntryOpen(false)
+        setTimeUntilOpen('')
+      }
     }, 1000)
 
     fetchLiveDates()
+    setTimeout(() => setShowForm(true), 100)
     
     return () => clearInterval(timer)
   }, [])
 
   const fetchLiveDates = async () => {
-    try {
-      const response = await fetch('/api/lives')
-      const data = await response.json()
-      setDates(data.dates || [])
-    } catch (error) {
-      console.error('Failed to fetch live dates:', error)
-      // 開発用のダミーデータ
-      setDates([
-        '12月25日(水)',
-        '12月26日(木)',
-        '12月27日(金)',
-        '12月28日(土)',
-        '12月29日(日)'
-      ])
-    }
+    // 2025年7月の口火ライブ開催日（テスト用）
+    const testDates = [
+      '7月5日(土)',
+      '7月8日(火)',
+      '7月10日(木)',
+      '7月12日(土)',
+      '7月15日(火)',
+      '7月17日(木)',
+      '7月19日(土)',
+      '7月22日(火)',
+      '7月24日(木)',
+      '7月26日(土)'
+    ]
+    setDates(testDates)
+  }
+
+  const canSubmit = () => {
+    if (!currentTime) return false
+    const testDate = new Date('2025-06-20T17:50:00')
+    const testEndDate = new Date('2025-06-20T19:00:00')
+    return currentTime >= testDate && currentTime < testEndDate
+  }
+
+  // まだマウントされていない場合はローディング表示
+  if (!mounted || !currentTime) {
+    return (
+      <div className="min-h-screen gradient-bg flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 mx-auto mb-4 border-4 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-gray-600">読み込み中...</p>
+        </div>
+      </div>
+    )
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!canSubmit()) {
+      alert('エントリー受付時間外です')
+      return
+    }
 
     setIsSubmitting(true)
 
     try {
+      console.log('Submitting form data:', formData)
+      
       const response = await fetch('/api/entry', {
         method: 'POST',
         headers: {
@@ -82,13 +136,27 @@ export default function EntryPage() {
         body: JSON.stringify(formData),
       })
 
+      const responseData = await response.text()
+      console.log('Response status:', response.status)
+      console.log('Response data:', responseData)
+
       if (response.ok) {
         router.push('/complete')
       } else {
-        alert('エントリーの送信に失敗しました')
+        let errorMessage = 'エントリーの送信に失敗しました'
+        try {
+          const errorData = JSON.parse(responseData)
+          if (errorData.error) {
+            errorMessage = errorData.error
+          }
+        } catch (parseError) {
+          errorMessage += `\nステータス: ${response.status}\nレスポンス: ${responseData}`
+        }
+        alert(errorMessage)
       }
     } catch (error) {
-      alert('エラーが発生しました')
+      console.error('Submit error:', error)
+      alert(`エラーが発生しました: ${error}`)
     } finally {
       setIsSubmitting(false)
     }
@@ -99,116 +167,184 @@ export default function EntryPage() {
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-2xl mx-auto">
-        <h1 className="text-2xl font-bold text-center mb-6">
-          {formData.liveType === 'KUCHIBE' ? '口火ライブ' : '二足のわらじライブ'} エントリーフォーム
-        </h1>
+  if (!isEntryOpen) {
+    return (
+      <div className="min-h-screen gradient-bg relative overflow-hidden flex items-center justify-center">
+        {/* Background decorations */}
+        <div className="absolute top-20 left-10 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float"></div>
+        <div className="absolute bottom-20 right-10 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float" style={{ animationDelay: '2s' }}></div>
         
-        <div className="bg-yellow-100 p-4 rounded-lg shadow-md mb-6 text-center">
-          <p className="text-lg font-semibold text-yellow-800">開発モード</p>
-          <p className="text-sm text-yellow-700">時間制限なしでエントリー可能です</p>
+        <div className={`text-center px-4 transition-all duration-1000 ${showForm ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
+          <div className="glass-card max-w-2xl mx-auto">
+            <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent animate-gradient">
+              お笑い劇場エントリーシステム
+            </h1>
+            
+            <div className="mb-8">
+              <p className="text-2xl font-semibold text-gray-800 mb-4">現在エントリー受付時間外です</p>
+              
+              {timeUntilOpen && (
+                <div className="mb-6">
+                  <p className="text-sm text-gray-600 mb-2">次回エントリー開始まで</p>
+                  <p className="text-3xl font-bold text-purple-600 font-mono">{timeUntilOpen}</p>
+                </div>
+              )}
+              
+              <div className="bg-white/50 rounded-xl p-6 text-left">
+                <h2 className="font-bold text-lg mb-3 text-gray-800">エントリー受付時間</h2>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <span className="w-3 h-3 bg-orange-500 rounded-full"></span>
+                    <div>
+                      <p className="font-semibold text-gray-700">口火ライブ</p>
+                      <p className="text-sm text-gray-600">毎月1日 22:00-22:30</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="w-3 h-3 bg-blue-500 rounded-full"></span>
+                    <div>
+                      <p className="font-semibold text-gray-700">二足のわらじライブ</p>
+                      <p className="text-sm text-gray-600">毎月10日 22:00-22:30</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <p className="text-sm text-red-600 font-semibold">
+                    【テスト環境】本日17:50-19:00にエントリー可能
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <p className="text-3xl font-bold text-gray-800 font-mono">
+              {currentTime.toLocaleTimeString('ja-JP')}
+            </p>
+          </div>
         </div>
+      </div>
+    )
+  }
 
-        <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-          <p className="text-center text-lg font-semibold">
-            現在時刻: {currentTime.toLocaleTimeString('ja-JP')}
-          </p>
-          <p className="text-center text-sm text-gray-600">
-            本番環境: 毎月1日・10日の22:00:00 - 22:30:00のみ受付
-          </p>
+  return (
+    <div className="min-h-screen gradient-bg relative overflow-hidden">
+      {/* Background decorations */}
+      <div className="absolute top-20 left-10 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float"></div>
+      <div className="absolute bottom-20 right-10 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float" style={{ animationDelay: '2s' }}></div>
+      <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-float" style={{ animationDelay: '4s' }}></div>
+
+      <div className={`max-w-2xl mx-auto px-4 py-8 transition-all duration-1000 ${showForm ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent animate-gradient">
+            {formData.liveType === 'KUCHIBE' ? '口火ライブ' : '二足のわらじライブ'}
+          </h1>
+          <p className="text-xl text-gray-600">エントリーフォーム</p>
         </div>
-
-        <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md">
-          <div className="mb-6">
-            <label className="block text-sm font-medium mb-2">ライブタイプ</label>
-            <div className="flex gap-4">
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="liveType"
-                  value="KUCHIBE"
-                  checked={formData.liveType === 'KUCHIBE'}
-                  onChange={handleChange}
-                  className="mr-2"
-                />
-                口火ライブ
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="liveType"
-                  value="NIWARA"
-                  checked={formData.liveType === 'NIWARA'}
-                  onChange={handleChange}
-                  className="mr-2"
-                />
-                二足のわらじライブ
-              </label>
+        
+        {/* Test mode notice */}
+        <div className="glass-card mb-6 border-2 border-green-200 bg-green-50/70">
+          <div className="flex items-center gap-3">
+            <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse-slow"></div>
+            <div>
+              <p className="text-lg font-semibold text-green-800">テストモード</p>
+              <p className="text-sm text-green-700">17:50-19:00 エントリー受付中</p>
             </div>
           </div>
+        </div>
 
-          <div className="mb-6">
-            <label className="block text-sm font-medium mb-2">エントリー数</label>
-            <div className="flex gap-4">
-              <label className="flex items-center">
+        {/* Clock */}
+        <div className="glass-card mb-8 text-center">
+          <p className="text-3xl font-bold text-gray-800 mb-2 font-mono">
+            {currentTime.toLocaleTimeString('ja-JP')}
+          </p>
+          <p className="text-sm text-gray-600">
+            受付終了まで: {(() => {
+              const endTime = new Date('2025-06-20T19:00:00')
+              const diff = endTime.getTime() - currentTime.getTime()
+              const minutes = Math.floor(diff / (1000 * 60))
+              const seconds = Math.floor((diff % (1000 * 60)) / 1000)
+              return `${minutes}分${seconds}秒`
+            })()}
+          </p>
+        </div>
+
+        {/* Main form */}
+        <form onSubmit={handleSubmit} className="card form-section">
+          {/* Live type selection - 口火ライブ固定 */}
+          <input type="hidden" name="liveType" value="KUCHIBE" />
+          
+          {/* Entry number selection */}
+          <div className="mb-8">
+            <label className="block text-sm font-bold text-gray-700 mb-4">エントリー数</label>
+            <div className="grid grid-cols-2 gap-4">
+              <label className="label-modern">
                 <input
                   type="radio"
                   name="entryNumber"
                   value="1"
                   checked={formData.entryNumber === '1'}
                   onChange={handleChange}
-                  className="mr-2"
+                  className="radio-modern"
                 />
-                1つ
+                <span className="font-medium">1つ</span>
               </label>
-              <label className="flex items-center">
+              <label className="label-modern">
                 <input
                   type="radio"
                   name="entryNumber"
                   value="2"
                   checked={formData.entryNumber === '2'}
                   onChange={handleChange}
-                  className="mr-2"
+                  className="radio-modern"
                 />
-                2つ
+                <span className="font-medium">2つ</span>
               </label>
             </div>
           </div>
 
-          <div className="border-t pt-6">
-            <h3 className="font-semibold mb-4">名義1</h3>
-            <div className="space-y-4">
+          {/* Entry 1 */}
+          <div className="space-y-6 relative">
+            <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+              <span className="w-8 h-8 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full flex items-center justify-center text-sm">1</span>
+              名義1
+            </h3>
+            
+            <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-1">名義名 *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">名義名 *</label>
                 <input
                   type="text"
                   name="name1"
                   value={formData.name1}
                   onChange={handleChange}
                   required
-                  className="w-full px-3 py-2 border rounded-md"
+                  placeholder="コンビ名/芸名"
+                  className="input-field"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">代表者名 *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">代表者名 *</label>
                 <input
                   type="text"
                   name="representative1"
                   value={formData.representative1}
                   onChange={handleChange}
                   required
-                  className="w-full px-3 py-2 border rounded-md"
+                  placeholder="山田太郎"
+                  className="input-field"
                 />
               </div>
+            </div>
+
+            <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1">第1希望</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">第1希望</label>
                 <select
                   name="preference1_1"
                   value={formData.preference1_1}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border rounded-md"
+                  className="select-field"
                 >
                   <option value="">選択してください</option>
                   {dates.map(date => (
@@ -217,12 +353,12 @@ export default function EntryPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">第2希望</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">第2希望</label>
                 <select
                   name="preference1_2"
                   value={formData.preference1_2}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border rounded-md"
+                  className="select-field"
                 >
                   <option value="">選択してください</option>
                   {dates.map(date => (
@@ -231,12 +367,12 @@ export default function EntryPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">第3希望</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">第3希望</label>
                 <select
                   name="preference1_3"
                   value={formData.preference1_3}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border rounded-md"
+                  className="select-field"
                 >
                   <option value="">選択してください</option>
                   {dates.map(date => (
@@ -247,98 +383,124 @@ export default function EntryPage() {
             </div>
           </div>
 
+          {/* Entry 2 */}
           {formData.entryNumber === '2' && (
-            <div className="border-t pt-6 mt-6">
-              <h3 className="font-semibold mb-4">名義2</h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">名義名 *</label>
-                  <input
-                    type="text"
-                    name="name2"
-                    value={formData.name2}
-                    onChange={handleChange}
-                    required={formData.entryNumber === '2'}
-                    className="w-full px-3 py-2 border rounded-md"
-                  />
+            <>
+              <div className="section-divider"></div>
+              
+              <div className="space-y-6 relative">
+                <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                  <span className="w-8 h-8 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full flex items-center justify-center text-sm">2</span>
+                  名義2
+                </h3>
+                
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">名義名 *</label>
+                    <input
+                      type="text"
+                      name="name2"
+                      value={formData.name2}
+                      onChange={handleChange}
+                      required={formData.entryNumber === '2'}
+                      placeholder="コンビ名/芸名"
+                      className="input-field"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">代表者名 *</label>
+                    <input
+                      type="text"
+                      name="representative2"
+                      value={formData.representative2}
+                      onChange={handleChange}
+                      required={formData.entryNumber === '2'}
+                      placeholder="山田太郎"
+                      className="input-field"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">代表者名 *</label>
-                  <input
-                    type="text"
-                    name="representative2"
-                    value={formData.representative2}
-                    onChange={handleChange}
-                    required={formData.entryNumber === '2'}
-                    className="w-full px-3 py-2 border rounded-md"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">第1希望</label>
-                  <select
-                    name="preference2_1"
-                    value={formData.preference2_1}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 border rounded-md"
-                  >
-                    <option value="">選択してください</option>
-                    {dates.map(date => (
-                      <option key={date} value={date}>{date}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">第2希望</label>
-                  <select
-                    name="preference2_2"
-                    value={formData.preference2_2}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 border rounded-md"
-                  >
-                    <option value="">選択してください</option>
-                    {dates.map(date => (
-                      <option key={date} value={date}>{date}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">第3希望</label>
-                  <select
-                    name="preference2_3"
-                    value={formData.preference2_3}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 border rounded-md"
-                  >
-                    <option value="">選択してください</option>
-                    {dates.map(date => (
-                      <option key={date} value={date}>{date}</option>
-                    ))}
-                  </select>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">第1希望</label>
+                    <select
+                      name="preference2_1"
+                      value={formData.preference2_1}
+                      onChange={handleChange}
+                      className="select-field"
+                    >
+                      <option value="">選択してください</option>
+                      {dates.map(date => (
+                        <option key={date} value={date}>{date}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">第2希望</label>
+                    <select
+                      name="preference2_2"
+                      value={formData.preference2_2}
+                      onChange={handleChange}
+                      className="select-field"
+                    >
+                      <option value="">選択してください</option>
+                      {dates.map(date => (
+                        <option key={date} value={date}>{date}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">第3希望</label>
+                    <select
+                      name="preference2_3"
+                      value={formData.preference2_3}
+                      onChange={handleChange}
+                      className="select-field"
+                    >
+                      <option value="">選択してください</option>
+                      {dates.map(date => (
+                        <option key={date} value={date}>{date}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
-            </div>
+            </>
           )}
 
-          <div className="border-t pt-6 mt-6">
+          {/* Email */}
+          <div className="mt-8 pt-8 border-t-2 border-gray-100">
             <div>
-              <label className="block text-sm font-medium mb-1">連絡先メールアドレス *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">連絡先メールアドレス *</label>
               <input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 border rounded-md"
+                placeholder="example@email.com"
+                className="input-field"
               />
             </div>
           </div>
 
+          {/* Submit button */}
           <button
             type="submit"
-            disabled={isSubmitting}
-            className="w-full mt-6 bg-blue-600 text-white py-3 rounded-md font-semibold hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            disabled={isSubmitting || !canSubmit()}
+            className="w-full mt-8 btn-primary text-lg"
           >
-            {isSubmitting ? '送信中...' : 'エントリーする'}
+            {isSubmitting ? (
+              <span className="loading-dots">
+                送信中
+                <span></span>
+                <span></span>
+                <span></span>
+              </span>
+            ) : (
+              'エントリーする'
+            )}
           </button>
         </form>
       </div>
