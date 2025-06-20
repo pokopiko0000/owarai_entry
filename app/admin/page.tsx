@@ -174,6 +174,12 @@ export default function AdminPage() {
                   '自動振り分け実行'
                 )}
               </button>
+              <a
+                href="/schedule"
+                className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-full font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300 inline-block"
+              >
+                🎭 香盤表を見る
+              </a>
               <button
                 onClick={handleConfirmSchedule}
                 className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-full font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300"

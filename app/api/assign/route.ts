@@ -14,8 +14,18 @@ export async function POST(request: NextRequest) {
       )
     }
     
+    // 既存のアサインメントを削除（該当ライブタイプのみ）
+    await prisma.assignment.deleteMany({
+      where: {
+        live: {
+          type: liveType as LiveType
+        }
+      }
+    })
+    
     const result = await autoAssignEntries(liveType as LiveType)
     
+    // 新しいアサインメントを作成
     await prisma.$transaction(
       result.assignments.map(assignment =>
         prisma.assignment.create({

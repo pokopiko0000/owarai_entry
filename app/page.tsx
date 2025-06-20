@@ -16,6 +16,7 @@ type EntryForm = {
   preference2_2: string
   preference2_3: string
   email: string
+  lineUrl: string
   liveType: 'KUCHIBE' | 'NIWARA'
 }
 
@@ -34,6 +35,7 @@ export default function EntryPage() {
     preference2_2: '',
     preference2_3: '',
     email: '',
+    lineUrl: '',
     liveType: 'KUCHIBE'
   })
   const [currentTime, setCurrentTime] = useState<Date | null>(null)
@@ -52,17 +54,24 @@ export default function EntryPage() {
       const now = new Date()
       setCurrentTime(now)
       
-      // テスト用: 6月20日の17:50-19:00をエントリー可能時間とする
-      const testDate = new Date('2025-06-20T17:50:00')
-      const testEndDate = new Date('2025-06-20T19:00:00')
+      // 本番仕様: 毎月1日と10日の22:00-22:30
+      const day = now.getDate()
+      const hour = now.getHours()
+      const minute = now.getMinutes()
       
-      if (now >= testDate && now < testEndDate) {
+      // フォーム表示条件: 毎月1日と10日は常に表示
+      const isFormDay = day === 1 || day === 10
+      
+      // ボタン押下可能条件: 22:00-22:30のみ
+      if (isFormDay && hour === 22 && minute < 30) {
         setIsEntryOpen(true)
         setTimeUntilOpen('')
-      } else if (now < testDate) {
+      } else if (isFormDay && hour < 22) {
         setIsEntryOpen(false)
-        // カウントダウン表示
-        const diff = testDate.getTime() - now.getTime()
+        // 22時までのカウントダウン
+        const targetTime = new Date(now)
+        targetTime.setHours(22, 0, 0, 0)
+        const diff = targetTime.getTime() - now.getTime()
         const hours = Math.floor(diff / (1000 * 60 * 60))
         const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
         const seconds = Math.floor((diff % (1000 * 60)) / 1000)
@@ -98,9 +107,11 @@ export default function EntryPage() {
 
   const canSubmit = () => {
     if (!currentTime) return false
-    const testDate = new Date('2025-06-20T17:50:00')
-    const testEndDate = new Date('2025-06-20T19:00:00')
-    return currentTime >= testDate && currentTime < testEndDate
+    const day = currentTime.getDate()
+    const hour = currentTime.getHours()
+    const minute = currentTime.getMinutes()
+    // 毎月1日と10日の22:00-22:30のみ送信可能
+    return (day === 1 || day === 10) && hour === 22 && minute < 30
   }
 
   // まだマウントされていない場合はローディング表示
@@ -118,11 +129,21 @@ export default function EntryPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
+    console.log('Form submitted, currentTime:', currentTime)
+    console.log('canSubmit():', canSubmit())
+    
     if (!canSubmit()) {
       alert('エントリー受付時間外です')
       return
     }
 
+    // 必須項目チェック
+    if (!formData.name1 || !formData.representative1 || !formData.email || !formData.liveType) {
+      alert('必須項目が入力されていません')
+      return
+    }
+
+    console.log('Time check passed, submitting...')
     setIsSubmitting(true)
 
     try {
@@ -167,7 +188,11 @@ export default function EntryPage() {
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
-  if (!isEntryOpen) {
+  // フォーム表示条件をチェック
+  const day = currentTime?.getDate() || 0
+  const isFormDay = day === 1 || day === 10
+  
+  if (!isFormDay) {
     return (
       <div className="min-h-screen gradient-bg relative overflow-hidden flex items-center justify-center">
         {/* Background decorations */}
@@ -210,8 +235,8 @@ export default function EntryPage() {
                 </div>
                 
                 <div className="mt-4 pt-4 border-t border-gray-200">
-                  <p className="text-sm text-red-600 font-semibold">
-                    【テスト環境】本日17:50-19:00にエントリー可能
+                  <p className="text-sm text-gray-600">
+                    次回のエントリー受付日をご確認ください
                   </p>
                 </div>
               </div>
@@ -483,6 +508,26 @@ export default function EntryPage() {
                 className="input-field"
               />
             </div>
+            
+            {/* LINE URL */}
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">LINE URL</label>
+              <input
+                type="url"
+                name="lineUrl"
+                value={formData.lineUrl}
+                onChange={handleChange}
+                placeholder="https://line.me/ti/p/..."
+                className="input-field"
+              />
+              <p className="text-xs text-gray-500 mt-1">LINE交換用のURLがあれば入力してください（任意）</p>
+            </div>
+          </div>
+
+          {/* Debug info */}
+          <div className="mt-4 p-3 bg-gray-100 rounded text-sm">
+            <p>現在時刻: {currentTime?.toLocaleString('ja-JP')}</p>
+            <p>受付可能: {canSubmit() ? '✅' : '❌'}</p>
           </div>
 
           {/* Submit button */}

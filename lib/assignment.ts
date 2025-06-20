@@ -6,6 +6,7 @@ type AssignmentResult = {
     entryId: string
     liveId: string
     nameIndex: number
+    order: number
   }[]
   waitingList: string[]
 }
@@ -14,7 +15,8 @@ export async function autoAssignEntries(liveType: LiveType): Promise<AssignmentR
   console.log('🔍 Starting assignment for liveType:', liveType)
   
   // Check if time restrictions should be disabled (for testing/development)
-  const disableTimeRestriction = process.env.NODE_ENV === 'test' || 
+  const disableTimeRestriction = process.env.NODE_ENV === 'development' || 
+                                process.env.NODE_ENV === 'test' || 
                                 process.env.DISABLE_TIME_RESTRICTION === 'true'
   
   console.log('⏰ Time restriction disabled:', disableTimeRestriction)
@@ -74,7 +76,7 @@ export async function autoAssignEntries(liveType: LiveType): Promise<AssignmentR
   const assignedRepresentatives = new Map<string, number>()
 
   lives.forEach(live => {
-    const capacity = liveType === 'KUCHIBE' ? 10 : 17
+    const capacity = liveType === 'KUCHIBE' ? 11 : 16
     capacityMap.set(live.id, capacity)
     assignedPerLive.set(live.id, live.assignments.length)
   })
@@ -117,7 +119,8 @@ export async function autoAssignEntries(liveType: LiveType): Promise<AssignmentR
         result.assignments.push({
           entryId: entry.id,
           liveId: live.id,
-          nameIndex: 1
+          nameIndex: 1,
+          order: 0 // 後でランダム順序に置き換える
         })
         assignedPerLive.set(live.id, currentCount + 1)
         assignedNames.add(entry.name1)
@@ -159,7 +162,8 @@ export async function autoAssignEntries(liveType: LiveType): Promise<AssignmentR
           result.assignments.push({
             entryId: entry.id,
             liveId: live.id,
-            nameIndex: 2
+            nameIndex: 2,
+            order: 0 // 後でランダム順序に置き換える
           })
           assignedPerLive.set(live.id, currentCount + 1)
           assignedNames.add(entry.name2)
@@ -174,5 +178,39 @@ export async function autoAssignEntries(liveType: LiveType): Promise<AssignmentR
     }
   }
 
+  // 各ライブの配置にランダム順序を付与
+  const liveAssignments = new Map<string, typeof result.assignments>()
+  
+  // ライブ別にアサインメントをグループ化
+  for (const assignment of result.assignments) {
+    if (!liveAssignments.has(assignment.liveId)) {
+      liveAssignments.set(assignment.liveId, [])
+    }
+    liveAssignments.get(assignment.liveId)!.push(assignment)
+  }
+  
+  // 各ライブのアサインメントをランダムに並び替えて順序を付与
+  const finalAssignments: typeof result.assignments = []
+  
+  for (const [liveId, assignments] of liveAssignments) {
+    // Fisher-Yatesアルゴリズムでランダムシャッフル
+    const shuffled = [...assignments]
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+    }
+    
+    // 順序を付与
+    shuffled.forEach((assignment, index) => {
+      finalAssignments.push({
+        ...assignment,
+        order: index + 1
+      })
+    })
+    
+    console.log(`🎲 Live ${liveId}: ${shuffled.length}人をランダム順序で配置`)
+  }
+  
+  result.assignments = finalAssignments
   return result
 }

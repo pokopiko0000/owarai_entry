@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -21,6 +21,7 @@ model Entry {
   preference2_2 String?
   preference2_3 String?
   email         String
+  lineUrl       String?
   liveType      LiveType
   timestamp     DateTime  @default(now())
   createdAt     DateTime  @default(now())
@@ -44,6 +45,7 @@ model Assignment {
   liveId    String
   nameIndex Int
   status    AssignmentStatus @default(ASSIGNED)
+  order     Int?      // 香盤表での順序（ランダムに決定）
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   

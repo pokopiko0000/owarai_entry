@@ -5,17 +5,14 @@ export async function POST(request: NextRequest) {
   try {
     const data = await request.json()
     
-    // テスト環境用の時間制限チェック
+    // 本番仕様の時間制限チェック
     const now = new Date()
-    const testDate = new Date('2025-06-20T17:50:00')
-    const testEndDate = new Date('2025-06-20T19:00:00')
+    const day = now.getDate()
+    const hour = now.getHours()
+    const minute = now.getMinutes()
     
-    // テスト時間内またはNODE_ENVがdevelopmentの場合は許可
-    if (process.env.NODE_ENV === 'production' && !(now >= testDate && now < testEndDate)) {
-      const day = now.getDate()
-      const hour = now.getHours()
-      const minute = now.getMinutes()
-      
+    // 開発環境では時間制限を無視
+    if (process.env.NODE_ENV === 'production') {
       if (!((day === 1 || day === 10) && hour === 22 && minute < 30)) {
         return NextResponse.json(
           { error: 'エントリー受付時間外です' },
@@ -38,6 +35,7 @@ export async function POST(request: NextRequest) {
         preference2_2: data.preference2_2 || null,
         preference2_3: data.preference2_3 || null,
         email: data.email,
+        lineUrl: data.lineUrl || null,
         liveType: data.liveType,
       },
     })
