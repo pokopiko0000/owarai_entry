@@ -94,7 +94,7 @@ export default async function SchedulePage() {
                             className="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200 transition-colors"
                             style={{ animationDelay: `${(index * 0.1) + (i * 0.05)}s` }}
                           >
-                            {assignment.entry.name}
+                            {assignment.nameIndex === 1 ? assignment.entry.name1 : assignment.entry.name2}
                           </span>
                         ))}
                       </div>
@@ -155,7 +155,7 @@ export default async function SchedulePage() {
                             className="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200 transition-colors"
                             style={{ animationDelay: `${(index * 0.1) + (i * 0.05)}s` }}
                           >
-                            {assignment.entry.name}
+                            {assignment.nameIndex === 1 ? assignment.entry.name1 : assignment.entry.name2}
                           </span>
                         ))}
                       </div>
