@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 
 export async function POST(request: NextRequest) {
+  let data: any = null
   try {
-    const data = await request.json()
+    data = await request.json()
     
     // 本番仕様の時間制限チェック
     const now = new Date()
