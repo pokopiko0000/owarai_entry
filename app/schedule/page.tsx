@@ -1,5 +1,7 @@
 import { prisma } from '@/lib/db'
 
+export const dynamic = 'force-dynamic'
+
 async function getSchedule() {
   const lives = await prisma.live.findMany({
     where: {
