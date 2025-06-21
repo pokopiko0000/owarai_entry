@@ -192,7 +192,7 @@ export async function autoAssignEntries(liveType: LiveType): Promise<AssignmentR
   // 各ライブのアサインメントをランダムに並び替えて順序を付与
   const finalAssignments: typeof result.assignments = []
   
-  for (const [liveId, assignments] of liveAssignments) {
+  for (const [liveId, assignments] of Array.from(liveAssignments)) {
     // Fisher-Yatesアルゴリズムでランダムシャッフル
     const shuffled = [...assignments]
     for (let i = shuffled.length - 1; i > 0; i--) {
