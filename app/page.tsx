@@ -54,31 +54,20 @@ export default function EntryPage() {
       const now = new Date()
       setCurrentTime(now)
       
-      // 本番仕様: 毎月1日と10日の22:00-22:30
-      const day = now.getDate()
-      const hour = now.getHours()
-      const minute = now.getMinutes()
+      // テスト用: 6月23日1:45からエントリー開始
+      const testStartTime = new Date('2025-06-23T01:45:00')
       
-      // フォーム表示条件: 毎月1日と10日は常に表示
-      const isFormDay = day === 1 || day === 10
-      
-      // ボタン押下可能条件: 22:00-22:30のみ
-      if (isFormDay && hour === 22 && minute < 30) {
+      if (now >= testStartTime) {
         setIsEntryOpen(true)
         setTimeUntilOpen('')
-      } else if (isFormDay && hour < 22) {
+      } else {
         setIsEntryOpen(false)
-        // 22時までのカウントダウン
-        const targetTime = new Date(now)
-        targetTime.setHours(22, 0, 0, 0)
-        const diff = targetTime.getTime() - now.getTime()
+        // 1:45までのカウントダウン
+        const diff = testStartTime.getTime() - now.getTime()
         const hours = Math.floor(diff / (1000 * 60 * 60))
         const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
         const seconds = Math.floor((diff % (1000 * 60)) / 1000)
         setTimeUntilOpen(`${hours}時間${minutes}分${seconds}秒`)
-      } else {
-        setIsEntryOpen(false)
-        setTimeUntilOpen('')
       }
     }, 1000)
 
@@ -107,8 +96,9 @@ export default function EntryPage() {
 
   const canSubmit = () => {
     if (!currentTime) return false
-    // テスト用: 24時間エントリー可能
-    return true
+    // テスト用: 6月23日1:45からエントリー可能
+    const testStartTime = new Date('2025-06-23T01:45:00')
+    return currentTime >= testStartTime
   }
 
   // まだマウントされていない場合はローディング表示
@@ -523,7 +513,9 @@ export default function EntryPage() {
           {/* Debug info */}
           <div className="mt-4 p-3 bg-gray-100 rounded text-sm">
             <p>現在時刻: {currentTime?.toLocaleString('ja-JP')}</p>
+            <p>開始時刻: 2025年6月23日 1:45</p>
             <p>受付可能: {canSubmit() ? '✅' : '❌'}</p>
+            {timeUntilOpen && <p>開始まで: {timeUntilOpen}</p>}
           </div>
 
           {/* Submit button */}
