@@ -245,10 +245,13 @@ export default function AdminPage() {
         // 結果サマリーを表示
         alert(`テスト完了！\n成功率: ${result.summary.successRate}\n合格: ${result.summary.passed}件\n不合格: ${result.summary.failed}件`)
       } else {
-        alert('テストに失敗しました')
+        const errorData = await response.json()
+        console.error('Test failed:', errorData)
+        alert(`テストに失敗しました\n${errorData.details || errorData.error}`)
       }
     } catch (error) {
-      alert('エラーが発生しました')
+      console.error('Test error:', error)
+      alert(`エラーが発生しました: ${error}`)
     }
   }
 

@@ -12,16 +12,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    console.log('🔍 Starting test assignment...')
     const { liveType = 'KUCHIBE' } = await request.json()
+    console.log('📝 Live type:', liveType)
 
     // 既存のテストエントリーをクリア
-    await prisma.entry.deleteMany({
+    console.log('🗑️ Deleting existing test entries...')
+    const deleted = await prisma.entry.deleteMany({
       where: {
         email: {
           contains: '@test.com'
         }
       }
     })
+    console.log(`✅ Deleted ${deleted.count} test entries`)
 
     // テスト用のライブ日程
     const liveDates = [
@@ -87,18 +91,22 @@ export async function POST(request: NextRequest) {
         email: `test${++entryIndex}@test.com`,
         lineUrl: null,
         liveType,
-        timestamp: new Date(Date.now() - (testEntries.length * 60000)) // 1分ずつ過去に
+        createdAt: new Date(Date.now() - (testEntries.length * 60000)) // createdAtを使用
       }
       testEntries.push({ ...entry, expected: scenario })
     }
 
     // エントリーを作成
+    console.log(`📝 Creating ${testEntries.length} test entries...`)
     const createdEntries = await prisma.$transaction(
       testEntries.map(({ expected, ...entry }) => prisma.entry.create({ data: entry }))
     )
+    console.log(`✅ Created ${createdEntries.length} entries`)
 
     // 自動振り分けを実行
+    console.log('🎯 Running auto assignment...')
     const result = await autoAssignEntries(liveType)
+    console.log(`✅ Assignment complete: ${result.assignments.length} assigned, ${result.waitingList.length} waiting`)
 
     // 結果を検証
     const verificationResults = []
@@ -201,8 +209,15 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Test assignment error:', error)
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    })
     return NextResponse.json(
-      { error: 'テスト振り分けに失敗しました' },
+      { 
+        error: 'テスト振り分けに失敗しました',
+        details: error instanceof Error ? error.message : String(error)
+      },
       { status: 500 }
     )
   }
