@@ -1,10 +1,16 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    // 簡易認証チェック（本番環境では適切な認証システムを使用）
+    const authHeader = request.headers.get('authorization')
+    if (authHeader !== 'Bearer owarai2025') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const lives = await prisma.live.findMany({
       include: {
         assignments: {

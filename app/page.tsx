@@ -130,6 +130,18 @@ export default function EntryPage() {
       alert('必須項目が入力されていません')
       return
     }
+    
+    // 第1希望は必須
+    if (!formData.preference1_1) {
+      alert('第1希望は必須です')
+      return
+    }
+    
+    // 2つエントリーの場合、名義2の第1希望も必須
+    if (formData.entryNumber === '2' && (!formData.name2 || !formData.representative2 || !formData.preference2_1)) {
+      alert('名義2の必須項目（名義名・代表者名・第1希望）が入力されていません')
+      return
+    }
 
     console.log('Time check passed, submitting...')
     setIsSubmitting(true)
@@ -351,11 +363,12 @@ export default function EntryPage() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">第1希望</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">第1希望 *</label>
                 <select
                   name="preference1_1"
                   value={formData.preference1_1}
                   onChange={handleChange}
+                  required
                   className="select-field"
                 >
                   <option value="">選択してください</option>
@@ -435,11 +448,12 @@ export default function EntryPage() {
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">第1希望</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">第1希望 *</label>
                     <select
                       name="preference2_1"
                       value={formData.preference2_1}
                       onChange={handleChange}
+                      required={formData.entryNumber === '2'}
                       className="select-field"
                     >
                       <option value="">選択してください</option>

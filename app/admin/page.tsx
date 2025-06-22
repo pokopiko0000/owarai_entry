@@ -31,16 +31,75 @@ export default function AdminPage() {
   const [isAssigning, setIsAssigning] = useState(false)
   const [activeTab, setActiveTab] = useState<'entries' | 'schedule'>('entries')
   const [showContent, setShowContent] = useState(false)
+  const [isAuthorized, setIsAuthorized] = useState(false)
+  const [password, setPassword] = useState('')
 
   useEffect(() => {
-    fetchEntries()
-    fetchLives()
-    setTimeout(() => setShowContent(true), 100)
+    // パスワード認証をチェック
+    const adminAuth = localStorage.getItem('adminAuth')
+    if (adminAuth === 'authorized') {
+      setIsAuthorized(true)
+      fetchEntries()
+      fetchLives()
+      setTimeout(() => setShowContent(true), 100)
+    }
   }, [])
+
+  const handlePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    // 簡易パスワード認証（本番環境では適切な認証システムを使用）
+    if (password === 'owarai2025') {
+      setIsAuthorized(true)
+      localStorage.setItem('adminAuth', 'authorized')
+      fetchEntries()
+      fetchLives()
+      setTimeout(() => setShowContent(true), 100)
+    } else {
+      alert('パスワードが正しくありません')
+    }
+  }
+
+  // 認証されていない場合はログイン画面を表示
+  if (!isAuthorized) {
+    return (
+      <div className="min-h-screen gradient-bg flex items-center justify-center">
+        <div className="glass-card max-w-md mx-auto">
+          <h1 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+            スタッフ管理画面
+          </h1>
+          <form onSubmit={handlePasswordSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                パスワード
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="input-field"
+                placeholder="管理者パスワードを入力"
+              />
+            </div>
+            <button
+              type="submit"
+              className="w-full btn-primary"
+            >
+              ログイン
+            </button>
+          </form>
+        </div>
+      </div>
+    )
+  }
 
   const fetchEntries = async () => {
     try {
-      const response = await fetch('/api/admin/entries')
+      const response = await fetch('/api/admin/entries', {
+        headers: {
+          'Authorization': 'Bearer owarai2025'
+        }
+      })
       const data = await response.json()
       setEntries(data.entries || [])
     } catch (error) {
@@ -50,7 +109,11 @@ export default function AdminPage() {
 
   const fetchLives = async () => {
     try {
-      const response = await fetch('/api/admin/lives')
+      const response = await fetch('/api/admin/lives', {
+        headers: {
+          'Authorization': 'Bearer owarai2025'
+        }
+      })
       const data = await response.json()
       setLives(data.lives || [])
     } catch (error) {

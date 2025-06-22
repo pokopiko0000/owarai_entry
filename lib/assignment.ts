@@ -55,6 +55,16 @@ export async function autoAssignEntries(liveType: LiveType): Promise<AssignmentR
   console.log('📊 Found entries:', entries.length)
   console.log('🎭 Found lives:', lives.length)
   
+  // Debug: Show all entries
+  entries.forEach(entry => {
+    console.log('📝 Entry:', {
+      id: entry.id,
+      name1: entry.name1,
+      preferences: [entry.preference1_1, entry.preference1_2, entry.preference1_3].filter(Boolean),
+      timestamp: entry.timestamp || entry.createdAt
+    })
+  })
+  
   // Debug: Show live dates format
   lives.forEach(live => {
     const liveDate = live.date.toLocaleDateString('ja-JP', {
