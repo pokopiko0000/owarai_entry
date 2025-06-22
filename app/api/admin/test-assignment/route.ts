@@ -69,10 +69,10 @@ export async function POST(request: NextRequest) {
 
     // テストエントリーを作成
     let entryIndex = 0
-    const testEntries = []
+    const testEntries: any[] = []
     
     for (const scenario of testScenarios) {
-      const entry = {
+      const entry: any = {
         entryNumber: scenario.name2 ? 2 : 1,
         name1: scenario.name,
         representative1: scenario.rep,
