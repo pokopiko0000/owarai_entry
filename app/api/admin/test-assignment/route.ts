@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
 
     // 既存のテストエントリーに関連するアサインメントを先に削除
     console.log('🗑️ Deleting existing test assignments...')
-    const testEntries = await prisma.entry.findMany({
+    const existingTestEntries = await prisma.entry.findMany({
       where: {
         email: {
           contains: '@test.com'
@@ -27,8 +27,8 @@ export async function POST(request: NextRequest) {
       select: { id: true }
     })
     
-    if (testEntries.length > 0) {
-      const testEntryIds = testEntries.map(e => e.id)
+    if (existingTestEntries.length > 0) {
+      const testEntryIds = existingTestEntries.map(e => e.id)
       const deletedAssignments = await prisma.assignment.deleteMany({
         where: {
           entryId: {
