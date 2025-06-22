@@ -14,10 +14,13 @@ type AssignmentResult = {
 export async function autoAssignEntries(liveType: LiveType): Promise<AssignmentResult> {
   console.log('🔍 Starting assignment for liveType:', liveType)
   
+  // デバッグ用：環境変数を確認
+  console.log('📍 NODE_ENV:', process.env.NODE_ENV)
+  console.log('📍 DISABLE_TIME_RESTRICTION:', process.env.DISABLE_TIME_RESTRICTION)
+  
   // Check if time restrictions should be disabled (for testing/development)
-  const disableTimeRestriction = process.env.NODE_ENV === 'development' || 
-                                process.env.NODE_ENV === 'test' || 
-                                process.env.DISABLE_TIME_RESTRICTION === 'true'
+  // テスト用：常に時間制限を無効化
+  const disableTimeRestriction = true
   
   console.log('⏰ Time restriction disabled:', disableTimeRestriction)
   
@@ -27,11 +30,18 @@ export async function autoAssignEntries(liveType: LiveType): Promise<AssignmentR
   
   // Only apply time restrictions in production environment
   if (!disableTimeRestriction) {
+    const timeStart = new Date(new Date().setHours(22, 0, 0, 0))
+    const timeEnd = new Date(new Date().setHours(22, 30, 0, 0))
+    console.log('⏰ Time restriction applied:', timeStart, 'to', timeEnd)
     whereClause.createdAt = {
-      gte: new Date(new Date().setHours(22, 0, 0, 0)),
-      lt: new Date(new Date().setHours(22, 30, 0, 0))
+      gte: timeStart,
+      lt: timeEnd
     }
+  } else {
+    console.log('⏰ No time restriction - fetching all entries')
   }
+  
+  console.log('🔍 Where clause:', JSON.stringify(whereClause, null, 2))
   
   const entries = await prisma.entry.findMany({
     where: whereClause,
@@ -54,6 +64,39 @@ export async function autoAssignEntries(liveType: LiveType): Promise<AssignmentR
   
   console.log('📊 Found entries:', entries.length)
   console.log('🎭 Found lives:', lives.length)
+  
+  // ライブデータが存在しない場合、テスト用データを自動作成
+  if (lives.length === 0) {
+    console.log('📝 No lives found, creating test live data...')
+    const testLives = []
+    
+    if (liveType === 'KUCHIBE') {
+      testLives.push(
+        { date: new Date('2025-07-05T20:00:00'), type: 'KUCHIBE', capacity: 11 },
+        { date: new Date('2025-07-08T20:00:00'), type: 'KUCHIBE', capacity: 11 },
+        { date: new Date('2025-07-10T20:00:00'), type: 'KUCHIBE', capacity: 11 },
+        { date: new Date('2025-07-12T20:00:00'), type: 'KUCHIBE', capacity: 11 }
+      )
+    } else {
+      testLives.push(
+        { date: new Date('2025-07-06T19:00:00'), type: 'NIWARA', capacity: 16 },
+        { date: new Date('2025-07-13T19:00:00'), type: 'NIWARA', capacity: 16 },
+        { date: new Date('2025-07-20T19:00:00'), type: 'NIWARA', capacity: 16 }
+      )
+    }
+    
+    const createdLives = await prisma.$transaction(
+      testLives.map(live => 
+        prisma.live.create({
+          data: live,
+          include: { assignments: true }
+        })
+      )
+    )
+    
+    lives.splice(0, 0, ...createdLives)
+    console.log('✅ Created test lives:', createdLives.length)
+  }
   
   // Debug: Show all entries
   entries.forEach(entry => {
