@@ -255,6 +255,81 @@ export default function AdminPage() {
     }
   }
 
+  const handleResetEntries = async () => {
+    const confirmMessage = selectedType === 'KUCHIBE' 
+      ? '口火ライブのエントリーをすべて削除しますか？' 
+      : selectedType === 'NIWARA'
+      ? '二足のわらじライブのエントリーをすべて削除しますか？'
+      : 'すべてのエントリーを削除しますか？'
+    
+    if (!confirm(confirmMessage + '\nこの操作は取り消せません。')) {
+      return
+    }
+
+    try {
+      const response = await fetch('/api/admin/reset', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer owarai2025'
+        },
+        body: JSON.stringify({ 
+          resetType: 'entries',
+          liveType: selectedType 
+        }),
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        alert(result.message)
+        fetchEntries()
+        fetchLives()
+      } else {
+        const errorData = await response.json()
+        alert(`リセットに失敗しました\n${errorData.details || errorData.error}`)
+      }
+    } catch (error) {
+      alert(`エラーが発生しました: ${error}`)
+    }
+  }
+
+  const handleResetAssignments = async () => {
+    const confirmMessage = selectedType === 'KUCHIBE' 
+      ? '口火ライブの香盤表（振り分け結果）をリセットしますか？' 
+      : selectedType === 'NIWARA'
+      ? '二足のわらじライブの香盤表（振り分け結果）をリセットしますか？'
+      : 'すべての香盤表（振り分け結果）をリセットしますか？'
+    
+    if (!confirm(confirmMessage + '\nこの操作は取り消せません。')) {
+      return
+    }
+
+    try {
+      const response = await fetch('/api/admin/reset', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer owarai2025'
+        },
+        body: JSON.stringify({ 
+          resetType: 'assignments',
+          liveType: selectedType 
+        }),
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        alert(result.message)
+        fetchLives()
+      } else {
+        const errorData = await response.json()
+        alert(`リセットに失敗しました\n${errorData.details || errorData.error}`)
+      }
+    } catch (error) {
+      alert(`エラーが発生しました: ${error}`)
+    }
+  }
+
   const filteredEntries = entries.filter(entry => entry.liveType === selectedType)
   const filteredLives = lives.filter(live => live.type === selectedType)
 
@@ -330,6 +405,18 @@ export default function AdminPage() {
                 ) : (
                   '自動振り分け実行'
                 )}
+              </button>
+              <button
+                onClick={handleResetEntries}
+                className="px-4 py-2 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-full font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+              >
+                エントリーをリセット
+              </button>
+              <button
+                onClick={handleResetAssignments}
+                className="px-4 py-2 bg-gradient-to-r from-gray-600 to-gray-800 text-white rounded-full font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+              >
+                香盤表をリセット
               </button>
               <a
                 href="/schedule"
