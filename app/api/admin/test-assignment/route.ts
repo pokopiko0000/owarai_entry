@@ -16,6 +16,29 @@ export async function POST(request: NextRequest) {
     const { liveType = 'KUCHIBE' } = await request.json()
     console.log('📝 Live type:', liveType)
 
+    // 既存のテストエントリーに関連するアサインメントを先に削除
+    console.log('🗑️ Deleting existing test assignments...')
+    const testEntries = await prisma.entry.findMany({
+      where: {
+        email: {
+          contains: '@test.com'
+        }
+      },
+      select: { id: true }
+    })
+    
+    if (testEntries.length > 0) {
+      const testEntryIds = testEntries.map(e => e.id)
+      const deletedAssignments = await prisma.assignment.deleteMany({
+        where: {
+          entryId: {
+            in: testEntryIds
+          }
+        }
+      })
+      console.log(`✅ Deleted ${deletedAssignments.count} test assignments`)
+    }
+    
     // 既存のテストエントリーをクリア
     console.log('🗑️ Deleting existing test entries...')
     const deleted = await prisma.entry.deleteMany({
