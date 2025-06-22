@@ -187,6 +187,39 @@ export default function AdminPage() {
     }
   }
 
+  const handleCreateTestEntries = async () => {
+    const count = prompt('作成するテストエントリー数を入力してください (推奨: 30-50)', '30')
+    if (!count || isNaN(Number(count))) return
+
+    if (!confirm(`${count}件のテストエントリーを作成しますか？`)) {
+      return
+    }
+
+    try {
+      const response = await fetch('/api/admin/create-test-entries', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer owarai2025'
+        },
+        body: JSON.stringify({ 
+          count: Number(count), 
+          liveType: selectedType 
+        }),
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        alert(result.message)
+        fetchEntries()
+      } else {
+        alert('テストエントリーの作成に失敗しました')
+      }
+    } catch (error) {
+      alert('エラーが発生しました')
+    }
+  }
+
   const filteredEntries = entries.filter(entry => entry.liveType === selectedType)
   const filteredLives = lives.filter(live => live.type === selectedType)
 
@@ -235,6 +268,12 @@ export default function AdminPage() {
             </div>
 
             <div className="flex gap-3">
+              <button
+                onClick={handleCreateTestEntries}
+                className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-full font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+              >
+                テストエントリー作成
+              </button>
               <button
                 onClick={handleAutoAssign}
                 disabled={isAssigning}
