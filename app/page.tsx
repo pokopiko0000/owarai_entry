@@ -107,11 +107,8 @@ export default function EntryPage() {
 
   const canSubmit = () => {
     if (!currentTime) return false
-    const day = currentTime.getDate()
-    const hour = currentTime.getHours()
-    const minute = currentTime.getMinutes()
-    // 毎月1日と10日の22:00-22:30のみ送信可能
-    return (day === 1 || day === 10) && hour === 22 && minute < 30
+    // テスト用: 24時間エントリー可能
+    return true
   }
 
   // まだマウントされていない場合はローディング表示
@@ -188,9 +185,8 @@ export default function EntryPage() {
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
-  // フォーム表示条件をチェック
-  const day = currentTime?.getDate() || 0
-  const isFormDay = day === 1 || day === 10
+  // テスト用: 常にフォーム表示
+  const isFormDay = true
   
   if (!isFormDay) {
     return (
