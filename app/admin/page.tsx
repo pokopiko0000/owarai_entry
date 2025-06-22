@@ -33,8 +33,38 @@ export default function AdminPage() {
   const [showContent, setShowContent] = useState(false)
   const [isAuthorized, setIsAuthorized] = useState(false)
   const [password, setPassword] = useState('')
+  const [mounted, setMounted] = useState(false)
+
+  const fetchEntries = async () => {
+    try {
+      const response = await fetch('/api/admin/entries', {
+        headers: {
+          'Authorization': 'Bearer owarai2025'
+        }
+      })
+      const data = await response.json()
+      setEntries(data.entries || [])
+    } catch (error) {
+      console.error('Failed to fetch entries:', error)
+    }
+  }
+
+  const fetchLives = async () => {
+    try {
+      const response = await fetch('/api/admin/lives', {
+        headers: {
+          'Authorization': 'Bearer owarai2025'
+        }
+      })
+      const data = await response.json()
+      setLives(data.lives || [])
+    } catch (error) {
+      console.error('Failed to fetch lives:', error)
+    }
+  }
 
   useEffect(() => {
+    setMounted(true)
     // パスワード認証をチェック
     const adminAuth = localStorage.getItem('adminAuth')
     if (adminAuth === 'authorized') {
@@ -57,6 +87,18 @@ export default function AdminPage() {
     } else {
       alert('パスワードが正しくありません')
     }
+  }
+
+  // まだマウントされていない場合はローディング表示
+  if (!mounted) {
+    return (
+      <div className="min-h-screen gradient-bg flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 mx-auto mb-4 border-4 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-gray-600">読み込み中...</p>
+        </div>
+      </div>
+    )
   }
 
   // 認証されていない場合はログイン画面を表示
@@ -91,34 +133,6 @@ export default function AdminPage() {
         </div>
       </div>
     )
-  }
-
-  const fetchEntries = async () => {
-    try {
-      const response = await fetch('/api/admin/entries', {
-        headers: {
-          'Authorization': 'Bearer owarai2025'
-        }
-      })
-      const data = await response.json()
-      setEntries(data.entries || [])
-    } catch (error) {
-      console.error('Failed to fetch entries:', error)
-    }
-  }
-
-  const fetchLives = async () => {
-    try {
-      const response = await fetch('/api/admin/lives', {
-        headers: {
-          'Authorization': 'Bearer owarai2025'
-        }
-      })
-      const data = await response.json()
-      setLives(data.lives || [])
-    } catch (error) {
-      console.error('Failed to fetch lives:', error)
-    }
   }
 
   const handleAutoAssign = async () => {
