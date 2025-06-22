@@ -34,6 +34,7 @@ export default function AdminPage() {
   const [isAuthorized, setIsAuthorized] = useState(false)
   const [password, setPassword] = useState('')
   const [mounted, setMounted] = useState(false)
+  const [testResult, setTestResult] = useState<any>(null)
 
   const fetchEntries = async () => {
     try {
@@ -220,6 +221,37 @@ export default function AdminPage() {
     }
   }
 
+  const handleTestAssignment = async () => {
+    if (!confirm('振り分けテストを実行しますか？\n※既存のテストデータは削除されます')) {
+      return
+    }
+
+    try {
+      const response = await fetch('/api/admin/test-assignment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer owarai2025'
+        },
+        body: JSON.stringify({ liveType: selectedType }),
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        setTestResult(result)
+        fetchEntries()
+        fetchLives()
+        
+        // 結果サマリーを表示
+        alert(`テスト完了！\n成功率: ${result.summary.successRate}\n合格: ${result.summary.passed}件\n不合格: ${result.summary.failed}件`)
+      } else {
+        alert('テストに失敗しました')
+      }
+    } catch (error) {
+      alert('エラーが発生しました')
+    }
+  }
+
   const filteredEntries = entries.filter(entry => entry.liveType === selectedType)
   const filteredLives = lives.filter(live => live.type === selectedType)
 
@@ -268,6 +300,12 @@ export default function AdminPage() {
             </div>
 
             <div className="flex gap-3">
+              <button
+                onClick={handleTestAssignment}
+                className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+              >
+                振り分けテスト実行
+              </button>
               <button
                 onClick={handleCreateTestEntries}
                 className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-full font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300"
@@ -450,6 +488,91 @@ export default function AdminPage() {
                   ))}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Test Result Section */}
+          {testResult && (
+            <div className="glass-card mt-8">
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">振り分けテスト結果</h2>
+              
+              {/* Summary */}
+              <div className="mb-6 p-4 bg-white/50 rounded-xl">
+                <h3 className="font-bold text-lg mb-2">テストサマリー</h3>
+                <div className="grid grid-cols-4 gap-4 text-center">
+                  <div>
+                    <p className="text-3xl font-bold text-purple-600">{testResult.summary.successRate}</p>
+                    <p className="text-sm text-gray-600">成功率</p>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-bold text-green-600">{testResult.summary.passed}</p>
+                    <p className="text-sm text-gray-600">合格</p>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-bold text-red-600">{testResult.summary.failed}</p>
+                    <p className="text-sm text-gray-600">不合格</p>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-bold text-blue-600">{testResult.summary.totalTests}</p>
+                    <p className="text-sm text-gray-600">総テスト数</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Live Stats */}
+              <div className="mb-6">
+                <h3 className="font-bold text-lg mb-2">ライブ別配置状況</h3>
+                <div className="space-y-2">
+                  {testResult.liveStats.map((live: any, index: number) => (
+                    <div key={index} className="flex justify-between items-center p-3 bg-white/30 rounded-lg">
+                      <span className="font-medium">{live.date}</span>
+                      <span>{live.assigned}/{live.capacity}組</span>
+                      <span className={`px-3 py-1 rounded-full text-sm ${
+                        live.status === '満員' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+                      }`}>
+                        {live.status}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Test Details */}
+              <div>
+                <h3 className="font-bold text-lg mb-2">テスト詳細</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="p-2 text-left">名義</th>
+                        <th className="p-2 text-left">代表者</th>
+                        <th className="p-2 text-left">希望</th>
+                        <th className="p-2 text-left">期待結果</th>
+                        <th className="p-2 text-left">実際の結果</th>
+                        <th className="p-2 text-center">判定</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {testResult.details.map((detail: any, index: number) => (
+                        <tr key={index} className={`border-b ${detail.success ? '' : 'bg-red-50'}`}>
+                          <td className="p-2">{detail.name}</td>
+                          <td className="p-2">{detail.representative}</td>
+                          <td className="p-2">{detail.preferences.join(', ')}</td>
+                          <td className="p-2">{detail.expected.result}</td>
+                          <td className="p-2">{detail.actual.result}</td>
+                          <td className="p-2 text-center">
+                            {detail.success ? (
+                              <span className="text-green-600">✅</span>
+                            ) : (
+                              <span className="text-red-600">❌</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           )}
         </div>
