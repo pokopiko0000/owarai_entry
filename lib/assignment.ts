@@ -72,16 +72,16 @@ export async function autoAssignEntries(liveType: LiveType): Promise<AssignmentR
     
     if (liveType === 'KUCHIBE') {
       testLives.push(
-        { date: new Date('2025-07-05T20:00:00'), type: 'KUCHIBE', capacity: 11 },
-        { date: new Date('2025-07-08T20:00:00'), type: 'KUCHIBE', capacity: 11 },
-        { date: new Date('2025-07-10T20:00:00'), type: 'KUCHIBE', capacity: 11 },
-        { date: new Date('2025-07-12T20:00:00'), type: 'KUCHIBE', capacity: 11 }
+        { date: new Date('2025-07-05T20:00:00'), type: 'KUCHIBE' as LiveType, capacity: 11 },
+        { date: new Date('2025-07-08T20:00:00'), type: 'KUCHIBE' as LiveType, capacity: 11 },
+        { date: new Date('2025-07-10T20:00:00'), type: 'KUCHIBE' as LiveType, capacity: 11 },
+        { date: new Date('2025-07-12T20:00:00'), type: 'KUCHIBE' as LiveType, capacity: 11 }
       )
     } else {
       testLives.push(
-        { date: new Date('2025-07-06T19:00:00'), type: 'NIWARA', capacity: 16 },
-        { date: new Date('2025-07-13T19:00:00'), type: 'NIWARA', capacity: 16 },
-        { date: new Date('2025-07-20T19:00:00'), type: 'NIWARA', capacity: 16 }
+        { date: new Date('2025-07-06T19:00:00'), type: 'NIWARA' as LiveType, capacity: 16 },
+        { date: new Date('2025-07-13T19:00:00'), type: 'NIWARA' as LiveType, capacity: 16 },
+        { date: new Date('2025-07-20T19:00:00'), type: 'NIWARA' as LiveType, capacity: 16 }
       )
     }
     
