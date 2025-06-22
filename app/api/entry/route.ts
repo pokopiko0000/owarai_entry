@@ -8,13 +8,13 @@ export async function POST(request: NextRequest) {
   try {
     data = await request.json()
     
-    // テスト用: 6月23日1:45からエントリー可能
+    // テスト用: 6月23日2:00からエントリー可能
     const now = new Date()
-    const testStartTime = new Date('2025-06-23T01:45:00')
+    const testStartTime = new Date('2025-06-23T02:00:00')
     
     if (now < testStartTime) {
       return NextResponse.json(
-        { error: 'エントリー受付開始前です（6月23日1:45から受付開始）' },
+        { error: 'エントリー受付開始前です（6月23日2:00から受付開始）' },
         { status: 400 }
       )
     }

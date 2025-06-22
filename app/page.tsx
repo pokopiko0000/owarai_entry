@@ -54,20 +54,21 @@ export default function EntryPage() {
       const now = new Date()
       setCurrentTime(now)
       
-      // テスト用: 6月23日1:45からエントリー開始
-      const testStartTime = new Date('2025-06-23T01:45:00')
+      // テスト用: 6月23日2:00からエントリー開始（フォームは常に表示）
+      const testStartTime = new Date('2025-06-23T02:00:00')
       
-      if (now >= testStartTime) {
-        setIsEntryOpen(true)
-        setTimeUntilOpen('')
-      } else {
-        setIsEntryOpen(false)
-        // 1:45までのカウントダウン
+      // フォームは常に表示
+      setIsEntryOpen(true)
+      
+      // 2:00前はカウントダウンを表示
+      if (now < testStartTime) {
         const diff = testStartTime.getTime() - now.getTime()
         const hours = Math.floor(diff / (1000 * 60 * 60))
         const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
         const seconds = Math.floor((diff % (1000 * 60)) / 1000)
         setTimeUntilOpen(`${hours}時間${minutes}分${seconds}秒`)
+      } else {
+        setTimeUntilOpen('')
       }
     }, 1000)
 
@@ -96,8 +97,8 @@ export default function EntryPage() {
 
   const canSubmit = () => {
     if (!currentTime) return false
-    // テスト用: 6月23日1:45からエントリー可能
-    const testStartTime = new Date('2025-06-23T01:45:00')
+    // テスト用: 6月23日2:00からエントリー可能
+    const testStartTime = new Date('2025-06-23T02:00:00')
     return currentTime >= testStartTime
   }
 
@@ -513,7 +514,7 @@ export default function EntryPage() {
           {/* Debug info */}
           <div className="mt-4 p-3 bg-gray-100 rounded text-sm">
             <p>現在時刻: {currentTime?.toLocaleString('ja-JP')}</p>
-            <p>開始時刻: 2025年6月23日 1:45</p>
+            <p>開始時刻: 2025年6月23日 2:00</p>
             <p>受付可能: {canSubmit() ? '✅' : '❌'}</p>
             {timeUntilOpen && <p>開始まで: {timeUntilOpen}</p>}
           </div>
@@ -532,7 +533,7 @@ export default function EntryPage() {
                 <span></span>
               </span>
             ) : (
-              'エントリーする'
+              canSubmit() ? 'エントリーする' : '受付開始をお待ちください'
             )}
           </button>
         </form>
