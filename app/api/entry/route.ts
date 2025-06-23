@@ -14,8 +14,8 @@ export async function POST(request: NextRequest) {
     const hour = now.getHours()
     const minute = now.getMinutes()
     
-    // 1日または10日の22:00-22:30のみ受付
-    if (!((date === 1 || date === 10) && hour === 22 && minute < 30)) {
+    // 1日または10日の22:00-23:00のみ受付
+    if (!((date === 1 || date === 10) && hour === 22)) {
       return NextResponse.json(
         { error: 'エントリー受付時間外です' },
         { status: 400 }
