@@ -54,21 +54,38 @@ export default function EntryPage() {
       const now = new Date()
       setCurrentTime(now)
       
-      // テスト用: 6月23日2:00からエントリー開始（フォームは常に表示）
-      const testStartTime = new Date('2025-06-23T02:00:00')
+      // 本番環境: エントリー開始日と時間を判定
+      const date = now.getDate()
+      const hour = now.getHours()
+      const minute = now.getMinutes()
       
-      // フォームは常に表示
-      setIsEntryOpen(true)
-      
-      // 2:00前はカウントダウンを表示
-      if (now < testStartTime) {
-        const diff = testStartTime.getTime() - now.getTime()
-        const hours = Math.floor(diff / (1000 * 60 * 60))
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
-        const seconds = Math.floor((diff % (1000 * 60)) / 1000)
-        setTimeUntilOpen(`${hours}時間${minutes}分${seconds}秒`)
+      // 1日または10日の場合
+      if (date === 1 || date === 10) {
+        setShowForm(true)
+        
+        // 22:00-22:30の間のみエントリー可能
+        if (hour === 22 && minute < 30) {
+          setIsEntryOpen(true)
+          const remainingMinutes = 29 - minute
+          const remainingSeconds = 60 - now.getSeconds()
+          setTimeUntilOpen(`残り${remainingMinutes}分${remainingSeconds}秒`)
+        } else if (hour < 22) {
+          setIsEntryOpen(false)
+          const hoursUntil = 21 - hour
+          const minutesUntil = 60 - minute
+          setTimeUntilOpen(`${hoursUntil}時間${minutesUntil}分後に開始`)
+        } else {
+          setIsEntryOpen(false)
+          setTimeUntilOpen('受付終了')
+        }
       } else {
-        setTimeUntilOpen('')
+        setShowForm(false)
+        setIsEntryOpen(false)
+        
+        // 次回エントリー日までの日数を計算
+        let nextDate = date < 10 ? 10 : 1
+        let daysUntil = nextDate === 1 ? (31 - date + 1) : (10 - date)
+        setTimeUntilOpen(`次回エントリーまで${daysUntil}日`)
       }
     }, 1000)
 
@@ -97,9 +114,12 @@ export default function EntryPage() {
 
   const canSubmit = () => {
     if (!currentTime) return false
-    // テスト用: 6月23日2:00からエントリー可能
-    const testStartTime = new Date('2025-06-23T02:00:00')
-    return currentTime >= testStartTime
+    const hour = currentTime.getHours()
+    const minute = currentTime.getMinutes()
+    const date = currentTime.getDate()
+    
+    // 本番環境: 1日または10日の22:00-22:30のみ
+    return (date === 1 || date === 10) && hour === 22 && minute < 30
   }
 
   // まだマウントされていない場合はローディング表示
@@ -188,8 +208,8 @@ export default function EntryPage() {
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
-  // テスト用: 常にフォーム表示
-  const isFormDay = true
+  // 本番環境: 1日または10日のみフォーム表示
+  const isFormDay = currentTime.getDate() === 1 || currentTime.getDate() === 10
   
   if (!isFormDay) {
     return (
@@ -266,14 +286,30 @@ export default function EntryPage() {
           <p className="text-xl text-gray-600">エントリーフォーム</p>
         </div>
         
-        {/* Test mode notice */}
-        <div className="glass-card mb-6 border-2 border-green-200 bg-green-50/70">
-          <div className="flex items-center gap-3">
-            <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse-slow"></div>
-            <div>
-              <p className="text-lg font-semibold text-green-800">テストモード</p>
-              <p className="text-sm text-green-700">17:50-19:00 エントリー受付中</p>
-            </div>
+
+        {/* Live type selector */}
+        <div className="glass-card mb-6">
+          <div className="flex items-center justify-center gap-4">
+            <button
+              onClick={() => setFormData({ ...formData, liveType: 'KUCHIBE' })}
+              className={`px-6 py-3 rounded-full font-semibold transition-all duration-300 ${
+                formData.liveType === 'KUCHIBE'
+                  ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg transform scale-105'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              口火ライブ
+            </button>
+            <button
+              onClick={() => setFormData({ ...formData, liveType: 'NIWARA' })}
+              className={`px-6 py-3 rounded-full font-semibold transition-all duration-300 ${
+                formData.liveType === 'NIWARA'
+                  ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg transform scale-105'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              二足のわらじライブ
+            </button>
           </div>
         </div>
 
@@ -282,21 +318,15 @@ export default function EntryPage() {
           <p className="text-3xl font-bold text-gray-800 mb-2 font-mono">
             {currentTime.toLocaleTimeString('ja-JP')}
           </p>
-          <p className="text-sm text-gray-600">
-            受付終了まで: {(() => {
-              const endTime = new Date('2025-06-20T19:00:00')
-              const diff = endTime.getTime() - currentTime.getTime()
-              const minutes = Math.floor(diff / (1000 * 60))
-              const seconds = Math.floor((diff % (1000 * 60)) / 1000)
-              return `${minutes}分${seconds}秒`
-            })()}
-          </p>
+          {isEntryOpen && (
+            <p className="text-sm text-gray-600">
+              {timeUntilOpen}
+            </p>
+          )}
         </div>
 
         {/* Main form */}
         <form onSubmit={handleSubmit} className="card form-section">
-          {/* Live type selection - 口火ライブ固定 */}
-          <input type="hidden" name="liveType" value="KUCHIBE" />
           
           {/* Entry number selection */}
           <div className="mb-8">
@@ -525,13 +555,6 @@ export default function EntryPage() {
             </div>
           </div>
 
-          {/* Debug info */}
-          <div className="mt-4 p-3 bg-gray-100 rounded text-sm">
-            <p>現在時刻: {currentTime?.toLocaleString('ja-JP')}</p>
-            <p>開始時刻: 2025年6月23日 2:00</p>
-            <p>受付可能: {canSubmit() ? '✅' : '❌'}</p>
-            {timeUntilOpen && <p>開始まで: {timeUntilOpen}</p>}
-          </div>
 
           {/* Submit button */}
           <button

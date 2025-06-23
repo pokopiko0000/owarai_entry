@@ -8,16 +8,19 @@ export async function POST(request: NextRequest) {
   try {
     data = await request.json()
     
-    // テスト用: 時間制限を一時的に無効化（サーバー・クライアント時刻差対応）
-    // const now = new Date()
-    // const testStartTime = new Date('2025-06-23T02:00:00')
+    // 本番環境: エントリー時間制限
+    const now = new Date()
+    const date = now.getDate()
+    const hour = now.getHours()
+    const minute = now.getMinutes()
     
-    // if (now < testStartTime) {
-    //   return NextResponse.json(
-    //     { error: 'エントリー受付開始前です（6月23日2:00から受付開始）' },
-    //     { status: 400 }
-    //   )
-    // }
+    // 1日または10日の22:00-22:30のみ受付
+    if (!((date === 1 || date === 10) && hour === 22 && minute < 30)) {
+      return NextResponse.json(
+        { error: 'エントリー受付時間外です' },
+        { status: 400 }
+      )
+    }
     
     const entry = await prisma.entry.create({
       data: {

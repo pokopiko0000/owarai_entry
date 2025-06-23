@@ -19,8 +19,9 @@ export async function autoAssignEntries(liveType: LiveType): Promise<AssignmentR
   console.log('📍 DISABLE_TIME_RESTRICTION:', process.env.DISABLE_TIME_RESTRICTION)
   
   // Check if time restrictions should be disabled (for testing/development)
-  // テスト用：常に時間制限を無効化
-  const disableTimeRestriction = true
+  const disableTimeRestriction = process.env.NODE_ENV === 'development' || 
+                                process.env.NODE_ENV === 'test' || 
+                                process.env.DISABLE_TIME_RESTRICTION === 'true'
   
   console.log('⏰ Time restriction disabled:', disableTimeRestriction)
   
@@ -65,38 +66,6 @@ export async function autoAssignEntries(liveType: LiveType): Promise<AssignmentR
   console.log('📊 Found entries:', entries.length)
   console.log('🎭 Found lives:', lives.length)
   
-  // ライブデータが存在しない場合、テスト用データを自動作成
-  if (lives.length === 0) {
-    console.log('📝 No lives found, creating test live data...')
-    const testLives = []
-    
-    if (liveType === 'KUCHIBE') {
-      testLives.push(
-        { date: new Date('2025-07-05T20:00:00'), type: 'KUCHIBE' as LiveType, capacity: 11 },
-        { date: new Date('2025-07-08T20:00:00'), type: 'KUCHIBE' as LiveType, capacity: 11 },
-        { date: new Date('2025-07-10T20:00:00'), type: 'KUCHIBE' as LiveType, capacity: 11 },
-        { date: new Date('2025-07-12T20:00:00'), type: 'KUCHIBE' as LiveType, capacity: 11 }
-      )
-    } else {
-      testLives.push(
-        { date: new Date('2025-07-06T19:00:00'), type: 'NIWARA' as LiveType, capacity: 16 },
-        { date: new Date('2025-07-13T19:00:00'), type: 'NIWARA' as LiveType, capacity: 16 },
-        { date: new Date('2025-07-20T19:00:00'), type: 'NIWARA' as LiveType, capacity: 16 }
-      )
-    }
-    
-    const createdLives = await prisma.$transaction(
-      testLives.map(live => 
-        prisma.live.create({
-          data: live,
-          include: { assignments: true }
-        })
-      )
-    )
-    
-    lives.splice(0, 0, ...createdLives)
-    console.log('✅ Created test lives:', createdLives.length)
-  }
   
   // Debug: Show all entries
   entries.forEach(entry => {
