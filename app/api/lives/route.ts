@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     
     const lives = await prisma.live.findMany({
       where: {
-        type: liveType,
+        type: liveType as 'KUCHIBE' | 'NIWARA',
         date: {
           gte: currentMonth,
           lte: twoMonthsLater
