@@ -90,26 +90,19 @@ export default function EntryPage() {
     }, 1000)
 
     fetchLiveDates()
-    setTimeout(() => setShowForm(true), 100)
     
     return () => clearInterval(timer)
   }, [])
 
   const fetchLiveDates = async () => {
-    // 2025年7月の口火ライブ開催日（テスト用）
-    const testDates = [
-      '7月5日(土)',
-      '7月8日(火)',
-      '7月10日(木)',
-      '7月12日(土)',
-      '7月15日(火)',
-      '7月17日(木)',
-      '7月19日(土)',
-      '7月22日(火)',
-      '7月24日(木)',
-      '7月26日(土)'
-    ]
-    setDates(testDates)
+    try {
+      const response = await fetch(`/api/lives?type=${formData.liveType}`)
+      const data = await response.json()
+      setDates(data.dates || [])
+    } catch (error) {
+      console.error('Failed to fetch live dates:', error)
+      setDates([])
+    }
   }
 
   const canSubmit = () => {
@@ -291,7 +284,10 @@ export default function EntryPage() {
         <div className="glass-card mb-6">
           <div className="flex items-center justify-center gap-4">
             <button
-              onClick={() => setFormData({ ...formData, liveType: 'KUCHIBE' })}
+              onClick={() => {
+                setFormData({ ...formData, liveType: 'KUCHIBE' })
+                setTimeout(() => fetchLiveDates(), 100)
+              }}
               className={`px-6 py-3 rounded-full font-semibold transition-all duration-300 ${
                 formData.liveType === 'KUCHIBE'
                   ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg transform scale-105'
@@ -301,7 +297,10 @@ export default function EntryPage() {
               口火ライブ
             </button>
             <button
-              onClick={() => setFormData({ ...formData, liveType: 'NIWARA' })}
+              onClick={() => {
+                setFormData({ ...formData, liveType: 'NIWARA' })
+                setTimeout(() => fetchLiveDates(), 100)
+              }}
               className={`px-6 py-3 rounded-full font-semibold transition-all duration-300 ${
                 formData.liveType === 'NIWARA'
                   ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg transform scale-105'

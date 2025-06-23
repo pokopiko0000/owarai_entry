@@ -1,16 +1,24 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    // テスト用: 2025年7月のライブデータを取得
+    const { searchParams } = new URL(request.url)
+    const liveType = searchParams.get('type') || 'KUCHIBE'
+    
+    // 現在の月と翌月のライブデータを取得
+    const now = new Date()
+    const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+    const twoMonthsLater = new Date(now.getFullYear(), now.getMonth() + 2, 0)
+    
     const lives = await prisma.live.findMany({
       where: {
+        type: liveType,
         date: {
-          gte: new Date('2025-07-01'),
-          lt: new Date('2025-08-01')
+          gte: currentMonth,
+          lte: twoMonthsLater
         }
       },
       orderBy: {

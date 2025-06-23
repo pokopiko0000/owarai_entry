@@ -35,11 +35,13 @@ export default function AdminPage() {
   const [lives, setLives] = useState<Live[]>([])
   const [selectedType, setSelectedType] = useState<'KUCHIBE' | 'NIWARA'>('KUCHIBE')
   const [isAssigning, setIsAssigning] = useState(false)
-  const [activeTab, setActiveTab] = useState<'entries' | 'schedule'>('entries')
+  const [activeTab, setActiveTab] = useState<'entries' | 'schedule' | 'lives'>('entries')
   const [showContent, setShowContent] = useState(false)
   const [isAuthorized, setIsAuthorized] = useState(false)
   const [password, setPassword] = useState('')
   const [mounted, setMounted] = useState(false)
+  const [newLiveDate, setNewLiveDate] = useState('')
+  const [newLiveType, setNewLiveType] = useState<'KUCHIBE' | 'NIWARA'>('KUCHIBE')
 
   const fetchEntries = async () => {
     try {
@@ -269,6 +271,65 @@ export default function AdminPage() {
     }
   }
 
+  const handleAddLive = async () => {
+    if (!newLiveDate) {
+      alert('日付を選択してください')
+      return
+    }
+
+    try {
+      const response = await fetch('/api/admin/lives/manage', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer owarai2025'
+        },
+        body: JSON.stringify({ 
+          date: newLiveDate,
+          type: newLiveType
+        }),
+      })
+
+      if (response.ok) {
+        alert('ライブ日程を追加しました')
+        setNewLiveDate('')
+        fetchLives()
+      } else {
+        const errorData = await response.json()
+        alert(`追加に失敗しました\n${errorData.error}`)
+      }
+    } catch (error) {
+      alert(`エラーが発生しました: ${error}`)
+    }
+  }
+
+  const handleDeleteLive = async (liveId: string) => {
+    if (!confirm('このライブ日程を削除しますか？')) {
+      return
+    }
+
+    try {
+      const response = await fetch('/api/admin/lives/manage', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer owarai2025'
+        },
+        body: JSON.stringify({ liveId }),
+      })
+
+      if (response.ok) {
+        alert('ライブ日程を削除しました')
+        fetchLives()
+      } else {
+        const errorData = await response.json()
+        alert(`削除に失敗しました\n${errorData.error}`)
+      }
+    } catch (error) {
+      alert(`エラーが発生しました: ${error}`)
+    }
+  }
+
   const filteredEntries = entries.filter(entry => entry.liveType === selectedType)
   const filteredLives = lives.filter(live => live.type === selectedType)
 
@@ -383,6 +444,16 @@ export default function AdminPage() {
               }`}
             >
               振り分け結果
+            </button>
+            <button
+              onClick={() => setActiveTab('lives')}
+              className={`px-6 py-3 rounded-full font-medium transition-all duration-300 ${
+                activeTab === 'lives'
+                  ? 'bg-white text-purple-600 shadow-lg transform scale-105'
+                  : 'bg-white/50 text-gray-600 hover:bg-white/70'
+              }`}
+            >
+              ライブ日程管理
             </button>
           </div>
         </div>
@@ -520,7 +591,89 @@ export default function AdminPage() {
                 </div>
               )}
             </div>
-          )}
+          ) : activeTab === 'lives' ? (
+            <div>
+              <h2 className="text-2xl font-bold mb-6 text-gray-800">
+                {selectedType === 'KUCHIBE' ? '口火' : '二足のわらじ'}ライブ 日程管理
+              </h2>
+              
+              {/* Add new live form */}
+              <div className="mb-8 p-6 bg-white/50 rounded-xl">
+                <h3 className="text-lg font-semibold mb-4">新しいライブ日程を追加</h3>
+                <div className="flex gap-4 items-end">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">日付</label>
+                    <input
+                      type="datetime-local"
+                      value={newLiveDate}
+                      onChange={(e) => setNewLiveDate(e.target.value)}
+                      className="input-field"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">タイプ</label>
+                    <select
+                      value={newLiveType}
+                      onChange={(e) => setNewLiveType(e.target.value as 'KUCHIBE' | 'NIWARA')}
+                      className="select-field"
+                    >
+                      <option value="KUCHIBE">口火ライブ</option>
+                      <option value="NIWARA">二足のわらじライブ</option>
+                    </select>
+                  </div>
+                  <button
+                    onClick={handleAddLive}
+                    className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-full font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                  >
+                    追加
+                  </button>
+                </div>
+              </div>
+              
+              {/* Live list */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4">登録済みのライブ日程</h3>
+                {filteredLives.length === 0 ? (
+                  <div className="text-center py-12">
+                    <p className="text-gray-500">ライブ日程がありません</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {filteredLives.map((live) => (
+                      <div key={live.id} className="flex items-center justify-between p-4 bg-white/50 rounded-lg">
+                        <div>
+                          <p className="font-medium">
+                            {new Date(live.date).toLocaleDateString('ja-JP', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                              weekday: 'long',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            振り分け: {live.assignments.length}組
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => handleDeleteLive(live.id)}
+                          disabled={live.assignments.length > 0}
+                          className={`px-4 py-2 rounded-full font-medium transition-all duration-300 ${
+                            live.assignments.length > 0
+                              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                              : 'bg-gradient-to-r from-red-500 to-orange-500 text-white hover:shadow-xl transform hover:scale-105'
+                          }`}
+                        >
+                          削除
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : null}
         </div>
       </div>
     </div>
