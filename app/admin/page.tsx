@@ -524,7 +524,7 @@ export default function AdminPage() {
                 </div>
               )}
             </div>
-          ) : (
+          ) : activeTab === 'schedule' ? (
             <div>
               <h2 className="text-2xl font-bold mb-6 text-gray-800">
                 {selectedType === 'KUCHIBE' ? '口火' : '二足のわらじ'}ライブ 振り分け結果
