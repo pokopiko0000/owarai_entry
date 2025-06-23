@@ -59,8 +59,9 @@ export default function EntryPage() {
       const hour = now.getHours()
       const minute = now.getMinutes()
       
-      // 1日または10日の場合
-      if (date === 1 || date === 10) {
+      // テスト用：常にフォームを表示
+      // 本番環境では: if (date === 1 || date === 10) {
+      if (true) {
         setShowForm(true)
         
         // 22:00-22:30の間のみエントリー可能
@@ -202,7 +203,8 @@ export default function EntryPage() {
   }
 
   // 本番環境: 1日または10日のみフォーム表示
-  const isFormDay = currentTime.getDate() === 1 || currentTime.getDate() === 10
+  // テスト用: 常にフォームを表示
+  const isFormDay = true // currentTime.getDate() === 1 || currentTime.getDate() === 10
   
   if (!isFormDay) {
     return (
