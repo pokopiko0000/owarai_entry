@@ -203,7 +203,7 @@ export default function EntryPage() {
     return (
       <div className="min-h-screen gradient-bg flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4 border-4 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-16 h-16 mx-auto mb-4 border-4 border-gray-600 border-t-transparent rounded-full animate-spin"></div>
           <p className="text-gray-600">読み込み中...</p>
         </div>
       </div>
@@ -289,22 +289,22 @@ export default function EntryPage() {
     return (
       <div className="min-h-screen gradient-bg relative overflow-hidden flex items-center justify-center">
         {/* Background decorations */}
-        <div className="absolute top-20 left-10 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float"></div>
-        <div className="absolute bottom-20 right-10 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute top-20 left-10 w-72 h-72 bg-gray-300 rounded-full mix-blend-multiply filter blur-3xl opacity-15 animate-float"></div>
+        <div className="absolute bottom-20 right-10 w-72 h-72 bg-gray-400 rounded-full mix-blend-multiply filter blur-3xl opacity-15 animate-float" style={{ animationDelay: '2s' }}></div>
         
         <div className="text-center px-4">
           <div className="glass-card max-w-2xl mx-auto">
-            <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent animate-gradient">
+            <h1 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900">
               {formData.liveType === 'KUCHIBE' ? '口火' : '二足のわらじ'}
             </h1>
             
             <div className="mb-8">
-              <p className="text-2xl font-semibold text-red-600 mb-4">今回のエントリーは締め切りました</p>
+              <p className="text-2xl font-semibold text-gray-900 mb-4">今回のエントリーは締め切りました</p>
               
               {timeUntilOpen && (
                 <div className="mb-6">
                   <p className="text-sm text-gray-600 mb-2">次回エントリーまで</p>
-                  <p className="text-3xl font-bold text-purple-600 font-mono">{timeUntilOpen}</p>
+                  <p className="text-3xl font-bold text-gray-900 font-mono">{timeUntilOpen}</p>
                 </div>
               )}
               
@@ -312,7 +312,7 @@ export default function EntryPage() {
                 <h2 className="font-bold text-lg mb-3 text-gray-800">次回エントリー受付時間</h2>
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
-                    <span className={`w-3 h-3 rounded-full ${formData.liveType === 'KUCHIBE' ? 'bg-orange-500' : 'bg-blue-500'}`}></span>
+                    <span className="w-3 h-3 rounded-full bg-gray-600"></span>
                     <div>
                       <p className="font-semibold text-gray-700">{formData.liveType === 'KUCHIBE' ? '口火' : '二足のわらじ'}</p>
                       <p className="text-sm text-gray-600">毎月{formData.liveType === 'KUCHIBE' ? '1' : '10'}日 22:00-23:00</p>
@@ -330,7 +330,7 @@ export default function EntryPage() {
               
               <a
                 href="/schedule"
-                className="inline-block px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-full font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300 text-lg"
+                className="inline-block px-8 py-4 bg-gray-900 text-white rounded-md font-semibold hover:shadow-xl hover:bg-black transform hover:scale-105 transition-all duration-300 text-lg"
               >
                 🎭 香盤表を確認する
               </a>
@@ -350,8 +350,8 @@ export default function EntryPage() {
     return (
       <div className="min-h-screen gradient-bg relative overflow-hidden flex items-center justify-center">
         {/* Background decorations */}
-        <div className="absolute top-20 left-10 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float"></div>
-        <div className="absolute bottom-20 right-10 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute top-20 left-10 w-72 h-72 bg-gray-300 rounded-full mix-blend-multiply filter blur-3xl opacity-15 animate-float"></div>
+        <div className="absolute bottom-20 right-10 w-72 h-72 bg-gray-400 rounded-full mix-blend-multiply filter blur-3xl opacity-15 animate-float" style={{ animationDelay: '2s' }}></div>
         
         <div className="text-center px-4">
           <div className="glass-card max-w-2xl mx-auto">
@@ -363,10 +363,10 @@ export default function EntryPage() {
                     setFormData({ ...formData, liveType: 'KUCHIBE' })
                     fetchLiveDates('KUCHIBE')
                   }}
-                  className={`px-6 py-3 rounded-full font-semibold transition-all duration-300 ${
+                  className={`px-6 py-3 rounded-md font-medium transition-all duration-300 ${
                     formData.liveType === 'KUCHIBE'
-                      ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg transform scale-105'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? 'bg-gray-900 text-white shadow-md'
+                      : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                   }`}
                 >
                   口火
@@ -376,10 +376,10 @@ export default function EntryPage() {
                     setFormData({ ...formData, liveType: 'NIWARA' })
                     fetchLiveDates('NIWARA')
                   }}
-                  className={`px-6 py-3 rounded-full font-semibold transition-all duration-300 ${
+                  className={`px-6 py-3 rounded-md font-medium transition-all duration-300 ${
                     formData.liveType === 'NIWARA'
-                      ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg transform scale-105'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? 'bg-gray-900 text-white shadow-md'
+                      : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                   }`}
                 >
                   二足のわらじ
@@ -387,7 +387,7 @@ export default function EntryPage() {
               </div>
             </div>
 
-            <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent animate-gradient">
+            <h1 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900">
               {formData.liveType === 'KUCHIBE' ? '口火' : '二足のわらじ'}
             </h1>
             
@@ -397,7 +397,7 @@ export default function EntryPage() {
               {timeUntilOpen && (
                 <div className="mb-6">
                   <p className="text-sm text-gray-600 mb-2">次回エントリーまで</p>
-                  <p className="text-3xl font-bold text-purple-600 font-mono">{timeUntilOpen}</p>
+                  <p className="text-3xl font-bold text-gray-900 font-mono">{timeUntilOpen}</p>
                 </div>
               )}
               
@@ -405,7 +405,7 @@ export default function EntryPage() {
                 <h2 className="font-bold text-lg mb-3 text-gray-800">エントリー受付時間</h2>
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
-                    <span className={`w-3 h-3 rounded-full ${formData.liveType === 'KUCHIBE' ? 'bg-orange-500' : 'bg-blue-500'}`}></span>
+                    <span className="w-3 h-3 rounded-full bg-gray-600"></span>
                     <div>
                       <p className="font-semibold text-gray-700">{formData.liveType === 'KUCHIBE' ? '口火' : '二足のわらじ'}</p>
                       <p className="text-sm text-gray-600">毎月{formData.liveType === 'KUCHIBE' ? '1' : '10'}日 22:00-23:00</p>
@@ -423,7 +423,7 @@ export default function EntryPage() {
               
               <a
                 href="/schedule"
-                className="inline-block px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-full font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300 text-lg"
+                className="inline-block px-8 py-4 bg-gray-900 text-white rounded-md font-semibold hover:shadow-xl hover:bg-black transform hover:scale-105 transition-all duration-300 text-lg"
               >
                 🎭 香盤表を確認する
               </a>
@@ -441,14 +441,14 @@ export default function EntryPage() {
   return (
     <div className="min-h-screen gradient-bg relative overflow-hidden">
       {/* Background decorations */}
-      <div className="absolute top-20 left-10 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float"></div>
-      <div className="absolute bottom-20 right-10 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float" style={{ animationDelay: '2s' }}></div>
-      <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-float" style={{ animationDelay: '4s' }}></div>
+      <div className="absolute top-20 left-10 w-72 h-72 bg-gray-300 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-float"></div>
+      <div className="absolute bottom-20 right-10 w-72 h-72 bg-gray-400 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-float" style={{ animationDelay: '2s' }}></div>
+      <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-gray-200 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-float" style={{ animationDelay: '4s' }}></div>
 
       <div className={`max-w-2xl mx-auto px-4 py-8 transition-all duration-1000 ${showForm ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent animate-gradient">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900">
             {formData.liveType === 'KUCHIBE' ? '口火' : '二足のわらじ'}
           </h1>
           <p className="text-xl text-gray-600">エントリーフォーム</p>
@@ -474,10 +474,10 @@ export default function EntryPage() {
                 setFormData({ ...formData, liveType: 'KUCHIBE' })
                 fetchLiveDates('KUCHIBE')
               }}
-              className={`px-6 py-3 rounded-full font-semibold transition-all duration-300 ${
+              className={`px-6 py-3 rounded-md font-semibold transition-all duration-300 ${
                 formData.liveType === 'KUCHIBE'
-                  ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg transform scale-105'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-gray-900 text-white shadow-lg transform scale-105'
+                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
               }`}
             >
               口火
@@ -487,10 +487,10 @@ export default function EntryPage() {
                 setFormData({ ...formData, liveType: 'NIWARA' })
                 fetchLiveDates('NIWARA')
               }}
-              className={`px-6 py-3 rounded-full font-semibold transition-all duration-300 ${
+              className={`px-6 py-3 rounded-md font-semibold transition-all duration-300 ${
                 formData.liveType === 'NIWARA'
-                  ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg transform scale-105'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-gray-900 text-white shadow-lg transform scale-105'
+                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
               }`}
             >
               二足のわらじ
@@ -505,14 +505,14 @@ export default function EntryPage() {
           </p>
           {entryPhase === 'form_only' && (
             <div className="space-y-2">
-              <p className="text-lg font-semibold text-blue-600">エントリー受付前</p>
+              <p className="text-lg font-semibold text-gray-700">エントリー受付前</p>
               <p className="text-sm text-gray-600">{timeUntilOpen}</p>
               <p className="text-xs text-gray-500">フォーム入力は可能、送信は22:00から</p>
             </div>
           )}
           {entryPhase === 'accepting' && (
             <div className="space-y-2">
-              <p className="text-lg font-semibold text-green-600">エントリー受付中</p>
+              <p className="text-lg font-semibold text-gray-900">エントリー受付中</p>
               <p className="text-sm text-gray-600">{timeUntilOpen}</p>
             </div>
           )}
@@ -526,8 +526,8 @@ export default function EntryPage() {
           
           {formData.liveType === 'KUCHIBE' ? (
             <div className="text-sm text-gray-700 space-y-3">
-              <div className="bg-red-50 p-3 rounded-lg border-l-4 border-red-400">
-                <p className="font-semibold text-red-700 mb-1">重要事項</p>
+              <div className="bg-gray-100 p-3 rounded-md border-l-4 border-gray-900">
+                <p className="font-semibold text-gray-900 mb-1">重要事項</p>
                 <p>※同じ人は月2回までしか出演できません。</p>
                 <p className="text-xs mt-1">(例:ボニーボニーで1回出演・花﨑ピンで1回出演した場合、花﨑さんはもうその月は出演不可。とくのしんさんはあと1回ピンでも別ユニットでも出演可)</p>
                 <p className="text-xs mt-1">※もし月3回以上出演していることが発覚した場合は、その人は次回以降エントリーをお断りする可能性があります</p>

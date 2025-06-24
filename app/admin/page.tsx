@@ -380,13 +380,13 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen gradient-bg relative overflow-hidden">
       {/* Background decorations */}
-      <div className="absolute top-20 left-10 w-72 h-72 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float"></div>
-      <div className="absolute bottom-20 right-10 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float" style={{ animationDelay: '2s' }}></div>
+      <div className="absolute top-20 left-10 w-72 h-72 bg-gray-300 rounded-full mix-blend-multiply filter blur-3xl opacity-15 animate-float"></div>
+      <div className="absolute bottom-20 right-10 w-72 h-72 bg-gray-400 rounded-full mix-blend-multiply filter blur-3xl opacity-15 animate-float" style={{ animationDelay: '2s' }}></div>
 
       <div className={`max-w-7xl mx-auto px-4 py-8 transition-all duration-1000 ${showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent animate-gradient">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900">
             管理画面
           </h1>
           <p className="text-gray-600 text-lg">エントリー管理・振り分け</p>
@@ -400,20 +400,20 @@ export default function AdminPage() {
               <div className="flex gap-2">
                 <button
                   onClick={() => setSelectedType('KUCHIBE')}
-                  className={`px-4 py-2 rounded-full font-medium transition-all duration-300 ${
+                  className={`px-4 py-2 rounded-md font-medium transition-all duration-300 ${
                     selectedType === 'KUCHIBE'
-                      ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg transform scale-105'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? 'bg-gray-900 text-white shadow-lg transform scale-105'
+                      : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                   }`}
                 >
                   口火
                 </button>
                 <button
                   onClick={() => setSelectedType('NIWARA')}
-                  className={`px-4 py-2 rounded-full font-medium transition-all duration-300 ${
+                  className={`px-4 py-2 rounded-md font-medium transition-all duration-300 ${
                     selectedType === 'NIWARA'
-                      ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg transform scale-105'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? 'bg-gray-900 text-white shadow-lg transform scale-105'
+                      : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                   }`}
                 >
                   二足のわらじ
@@ -440,25 +440,25 @@ export default function AdminPage() {
               </button>
               <button
                 onClick={handleResetEntries}
-                className="px-4 py-2 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-full font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                className="px-4 py-2 bg-gray-700 text-white rounded-md font-semibold hover:shadow-xl hover:bg-gray-800 transform hover:scale-105 transition-all duration-300"
               >
                 エントリーをリセット
               </button>
               <button
                 onClick={handleResetAssignments}
-                className="px-4 py-2 bg-gradient-to-r from-gray-600 to-gray-800 text-white rounded-full font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                className="px-4 py-2 bg-gray-600 text-white rounded-md font-semibold hover:shadow-xl hover:bg-gray-700 transform hover:scale-105 transition-all duration-300"
               >
                 香盤表をリセット
               </button>
               <a
                 href="/schedule"
-                className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-full font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300 inline-block"
+                className="px-6 py-3 bg-gray-900 text-white rounded-md font-semibold hover:shadow-xl hover:bg-black transform hover:scale-105 transition-all duration-300 inline-block"
               >
                 🎭 香盤表を見る
               </a>
               <button
                 onClick={handleConfirmSchedule}
-                className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-full font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                className="px-6 py-3 bg-gray-800 text-white rounded-md font-semibold hover:shadow-xl hover:bg-gray-900 transform hover:scale-105 transition-all duration-300"
               >
                 香盤表確定
               </button>
@@ -471,9 +471,9 @@ export default function AdminPage() {
           <div className="flex gap-4 justify-center">
             <button
               onClick={() => setActiveTab('entries')}
-              className={`px-6 py-3 rounded-full font-medium transition-all duration-300 ${
+              className={`px-6 py-3 rounded-md font-medium transition-all duration-300 ${
                 activeTab === 'entries'
-                  ? 'bg-white text-purple-600 shadow-lg transform scale-105'
+                  ? 'bg-gray-900 text-white shadow-lg transform scale-105'
                   : 'bg-white/50 text-gray-600 hover:bg-white/70'
               }`}
             >
@@ -481,9 +481,9 @@ export default function AdminPage() {
             </button>
             <button
               onClick={() => setActiveTab('schedule')}
-              className={`px-6 py-3 rounded-full font-medium transition-all duration-300 ${
+              className={`px-6 py-3 rounded-md font-medium transition-all duration-300 ${
                 activeTab === 'schedule'
-                  ? 'bg-white text-purple-600 shadow-lg transform scale-105'
+                  ? 'bg-gray-900 text-white shadow-lg transform scale-105'
                   : 'bg-white/50 text-gray-600 hover:bg-white/70'
               }`}
             >
@@ -491,9 +491,9 @@ export default function AdminPage() {
             </button>
             <button
               onClick={() => setActiveTab('lives')}
-              className={`px-6 py-3 rounded-full font-medium transition-all duration-300 ${
+              className={`px-6 py-3 rounded-md font-medium transition-all duration-300 ${
                 activeTab === 'lives'
-                  ? 'bg-white text-purple-600 shadow-lg transform scale-105'
+                  ? 'bg-gray-900 text-white shadow-lg transform scale-105'
                   : 'bg-white/50 text-gray-600 hover:bg-white/70'
               }`}
             >
@@ -601,15 +601,11 @@ export default function AdminPage() {
                               weekday: 'long'
                             })}
                           </h3>
-                          <span className={`px-4 py-2 rounded-full text-sm font-medium ${
-                            selectedType === 'KUCHIBE' 
-                              ? 'bg-gradient-to-r from-orange-100 to-red-100 text-orange-700'
-                              : 'bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700'
-                          }`}>
+                          <span className="px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700">
                             {live.assignments.length}組
                           </span>
                         </div>
-                        <p className="text-blue-600 font-medium">
+                        <p className="text-gray-700 font-medium">
                           {formatTimeRange(live.date, live.type as 'KUCHIBE' | 'NIWARA')}
                         </p>
                       </div>
@@ -621,7 +617,7 @@ export default function AdminPage() {
                             className="flex items-center gap-3 p-3 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
                             style={{ animationDelay: `${(index * 0.1) + (i * 0.05)}s` }}
                           >
-                            <span className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full flex items-center justify-center text-sm font-medium">
+                            <span className="w-8 h-8 bg-gray-900 text-white rounded-full flex items-center justify-center text-sm font-medium">
                               {assignment.nameIndex}
                             </span>
                             <div className="flex-1">
@@ -687,7 +683,7 @@ export default function AdminPage() {
                   </div>
                   <button
                     onClick={handleAddLive}
-                    className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-full font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                    className="px-6 py-3 bg-gray-800 text-white rounded-md font-semibold hover:shadow-xl hover:bg-gray-900 transform hover:scale-105 transition-all duration-300"
                   >
                     追加
                   </button>
@@ -695,8 +691,8 @@ export default function AdminPage() {
                 
                 {/* 時間範囲プレビュー */}
                 {newLiveDate && newLiveHour && (
-                  <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                    <p className="text-sm text-blue-700">
+                  <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                    <p className="text-sm text-gray-700">
                       <strong>プレビュー:</strong> {newLiveDate} {newLiveHour}:{newLiveMinute} 〜 {
                         (() => {
                           const dateTimeString = `${newLiveDate}T${newLiveHour}:${newLiveMinute}:00`
@@ -739,10 +735,10 @@ export default function AdminPage() {
                         <button
                           onClick={() => handleDeleteLive(live.id)}
                           disabled={live.assignments.length > 0}
-                          className={`px-4 py-2 rounded-full font-medium transition-all duration-300 ${
+                          className={`px-4 py-2 rounded-md font-medium transition-all duration-300 ${
                             live.assignments.length > 0
                               ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                              : 'bg-gradient-to-r from-red-500 to-orange-500 text-white hover:shadow-xl transform hover:scale-105'
+                              : 'bg-gray-700 text-white hover:shadow-xl hover:bg-gray-800 transform hover:scale-105'
                           }`}
                         >
                           削除
