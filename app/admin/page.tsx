@@ -41,7 +41,8 @@ export default function AdminPage() {
   const [password, setPassword] = useState('')
   const [mounted, setMounted] = useState(false)
   const [newLiveDate, setNewLiveDate] = useState('')
-  const [newLiveType, setNewLiveType] = useState<'KUCHIBE' | 'NIWARA'>('KUCHIBE')
+  const [newLiveHour, setNewLiveHour] = useState('')
+  const [newLiveMinute, setNewLiveMinute] = useState<'00' | '30'>('00')
 
   const fetchEntries = async () => {
     try {
@@ -173,7 +174,7 @@ export default function AdminPage() {
   }
 
   const handleConfirmSchedule = async () => {
-    if (!confirm('交番表を確定しますか？')) {
+    if (!confirm('香盤表を確定しますか？')) {
       return
     }
 
@@ -186,7 +187,7 @@ export default function AdminPage() {
       })
 
       if (response.ok) {
-        alert('交番表を確定しました')
+        alert('香盤表を確定しました')
       } else {
         alert('確定に失敗しました')
       }
@@ -198,9 +199,9 @@ export default function AdminPage() {
 
   const handleResetEntries = async () => {
     const confirmMessage = selectedType === 'KUCHIBE' 
-      ? '口火ライブのエントリーをすべて削除しますか？' 
+      ? '口火のエントリーをすべて削除しますか？' 
       : selectedType === 'NIWARA'
-      ? '二足のわらじライブのエントリーをすべて削除しますか？'
+      ? '二足のわらじのエントリーをすべて削除しますか？'
       : 'すべてのエントリーを削除しますか？'
     
     if (!confirm(confirmMessage + '\nこの操作は取り消せません。')) {
@@ -236,9 +237,9 @@ export default function AdminPage() {
 
   const handleResetAssignments = async () => {
     const confirmMessage = selectedType === 'KUCHIBE' 
-      ? '口火ライブの香盤表（振り分け結果）をリセットしますか？' 
+      ? '口火の香盤表（振り分け結果）をリセットしますか？' 
       : selectedType === 'NIWARA'
-      ? '二足のわらじライブの香盤表（振り分け結果）をリセットしますか？'
+      ? '二足のわらじの香盤表（振り分け結果）をリセットしますか？'
       : 'すべての香盤表（振り分け結果）をリセットしますか？'
     
     if (!confirm(confirmMessage + '\nこの操作は取り消せません。')) {
@@ -271,11 +272,52 @@ export default function AdminPage() {
     }
   }
 
+  // 終了時刻を計算
+  const calculateEndTime = (startDateTime: string, liveType: 'KUCHIBE' | 'NIWARA') => {
+    const startDate = new Date(startDateTime)
+    const duration = liveType === 'KUCHIBE' ? 60 : 90 // 口火60分、二足のわらじ90分
+    const endDate = new Date(startDate.getTime() + duration * 60 * 1000)
+    return endDate
+  }
+
+  // 開始時刻と終了時刻の表示用文字列を生成
+  const formatTimeRange = (startDateTime: string, liveType: 'KUCHIBE' | 'NIWARA') => {
+    const startDate = new Date(startDateTime)
+    const endDate = calculateEndTime(startDateTime, liveType)
+    
+    const formatTime = (date: Date) => {
+      return date.toLocaleTimeString('ja-JP', {
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    }
+    
+    return `${formatTime(startDate)}〜${formatTime(endDate)}`
+  }
+
+  // エントリー月と開催月の表示用文字列を生成
+  const formatLiveMonth = (dateStr: string) => {
+    const date = new Date(dateStr)
+    const month = date.getMonth() + 1
+    const day = date.getDate()
+    
+    // 7月1日・10日のエントリーは8月開催
+    if (month === 7 && (day === 1 || day === 10)) {
+      return '8月公演'
+    }
+    // その他は翌月開催
+    const nextMonth = month === 12 ? 1 : month + 1
+    return `${nextMonth}月公演`
+  }
+
   const handleAddLive = async () => {
-    if (!newLiveDate) {
-      alert('日付を選択してください')
+    if (!newLiveDate || !newLiveHour) {
+      alert('日付と時間を選択してください')
       return
     }
+
+    // 日付と時間を結合
+    const dateTimeString = `${newLiveDate}T${newLiveHour}:${newLiveMinute}:00`
 
     try {
       const response = await fetch('/api/admin/lives/manage', {
@@ -285,14 +327,16 @@ export default function AdminPage() {
           'Authorization': 'Bearer owarai2025'
         },
         body: JSON.stringify({ 
-          date: newLiveDate,
-          type: newLiveType
+          date: dateTimeString,
+          type: selectedType  // 選択中のタブのタイプを使用
         }),
       })
 
       if (response.ok) {
         alert('ライブ日程を追加しました')
         setNewLiveDate('')
+        setNewLiveHour('')
+        setNewLiveMinute('00')
         fetchLives()
       } else {
         const errorData = await response.json()
@@ -362,7 +406,7 @@ export default function AdminPage() {
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
-                  口火ライブ
+                  口火
                 </button>
                 <button
                   onClick={() => setSelectedType('NIWARA')}
@@ -372,7 +416,7 @@ export default function AdminPage() {
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
-                  二足のわらじライブ
+                  二足のわらじ
                 </button>
               </div>
             </div>
@@ -416,7 +460,7 @@ export default function AdminPage() {
                 onClick={handleConfirmSchedule}
                 className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-full font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300"
               >
-                交番表確定
+                香盤表確定
               </button>
             </div>
           </div>
@@ -547,22 +591,27 @@ export default function AdminPage() {
                       className="p-6 bg-white/50 rounded-xl"
                       style={{ animationDelay: `${index * 0.1}s` }}
                     >
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold text-gray-800">
-                          {new Date(live.date).toLocaleDateString('ja-JP', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                            weekday: 'long'
-                          })}
-                        </h3>
-                        <span className={`px-4 py-2 rounded-full text-sm font-medium ${
-                          selectedType === 'KUCHIBE' 
-                            ? 'bg-gradient-to-r from-orange-100 to-red-100 text-orange-700'
-                            : 'bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700'
-                        }`}>
-                          {live.assignments.length}組
-                        </span>
+                      <div className="mb-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <h3 className="text-lg font-semibold text-gray-800">
+                            {new Date(live.date).toLocaleDateString('ja-JP', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                              weekday: 'long'
+                            })}
+                          </h3>
+                          <span className={`px-4 py-2 rounded-full text-sm font-medium ${
+                            selectedType === 'KUCHIBE' 
+                              ? 'bg-gradient-to-r from-orange-100 to-red-100 text-orange-700'
+                              : 'bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700'
+                          }`}>
+                            {live.assignments.length}組
+                          </span>
+                        </div>
+                        <p className="text-blue-600 font-medium">
+                          {formatTimeRange(live.date, live.type as 'KUCHIBE' | 'NIWARA')}
+                        </p>
                       </div>
                       
                       <div className="grid md:grid-cols-2 gap-3">
@@ -599,26 +648,41 @@ export default function AdminPage() {
               
               {/* Add new live form */}
               <div className="mb-8 p-6 bg-white/50 rounded-xl">
-                <h3 className="text-lg font-semibold mb-4">新しいライブ日程を追加</h3>
-                <div className="flex gap-4 items-end">
-                  <div className="flex-1">
+                <h3 className="text-lg font-semibold mb-4">
+                  新しい{selectedType === 'KUCHIBE' ? '口火' : '二足のわらじ'}ライブ日程を追加
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">日付</label>
                     <input
-                      type="datetime-local"
+                      type="date"
                       value={newLiveDate}
                       onChange={(e) => setNewLiveDate(e.target.value)}
                       className="input-field"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">タイプ</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">開始時刻（時）</label>
                     <select
-                      value={newLiveType}
-                      onChange={(e) => setNewLiveType(e.target.value as 'KUCHIBE' | 'NIWARA')}
+                      value={newLiveHour}
+                      onChange={(e) => setNewLiveHour(e.target.value)}
                       className="select-field"
                     >
-                      <option value="KUCHIBE">口火ライブ</option>
-                      <option value="NIWARA">二足のわらじライブ</option>
+                      <option value="">選択</option>
+                      {[...Array(24)].map((_, i) => (
+                        <option key={i} value={i.toString().padStart(2, '0')}>{i}時</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">開始時刻（分）</label>
+                    <select
+                      value={newLiveMinute}
+                      onChange={(e) => setNewLiveMinute(e.target.value as '00' | '30')}
+                      className="select-field"
+                    >
+                      <option value="00">00分</option>
+                      <option value="30">30分</option>
                     </select>
                   </div>
                   <button
@@ -628,6 +692,21 @@ export default function AdminPage() {
                     追加
                   </button>
                 </div>
+                
+                {/* 時間範囲プレビュー */}
+                {newLiveDate && newLiveHour && (
+                  <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                    <p className="text-sm text-blue-700">
+                      <strong>プレビュー:</strong> {newLiveDate} {newLiveHour}:{newLiveMinute} 〜 {
+                        (() => {
+                          const dateTimeString = `${newLiveDate}T${newLiveHour}:${newLiveMinute}:00`
+                          const endTime = calculateEndTime(dateTimeString, selectedType)
+                          return endTime.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })
+                        })()
+                      } ({selectedType === 'KUCHIBE' ? '1時間' : '1.5時間'})
+                    </p>
+                  </div>
+                )}
               </div>
               
               {/* Live list */}
@@ -647,13 +726,14 @@ export default function AdminPage() {
                               year: 'numeric',
                               month: 'long',
                               day: 'numeric',
-                              weekday: 'long',
-                              hour: '2-digit',
-                              minute: '2-digit'
+                              weekday: 'long'
                             })}
                           </p>
+                          <p className="text-lg font-semibold text-blue-600">
+                            {formatTimeRange(live.date, live.type as 'KUCHIBE' | 'NIWARA')}
+                          </p>
                           <p className="text-sm text-gray-600">
-                            振り分け: {live.assignments.length}組
+                            振り分け: {live.assignments.length}組 ({live.type === 'KUCHIBE' ? '口火' : '二足のわらじ'}ライブ)
                           </p>
                         </div>
                         <button

@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'お笑い劇場エントリーシステム',
-  description: 'お笑い劇場のライブエントリー受付システム',
+  description: 'お笑い劇場のエントリー受付システム',
 }
 
 export default function RootLayout({

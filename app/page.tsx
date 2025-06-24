@@ -60,23 +60,28 @@ export default function EntryPage() {
       const minute = now.getMinutes()
       
       // エントリー日の判定（1日と10日）
-      // テスト用: 環境変数でテストモードを有効化
+      // 開発環境では常にエントリー日として扱う
       const isTestMode = process.env.NODE_ENV === 'development' || process.env.NEXT_PUBLIC_TEST_MODE === 'true'
-      const isEntryDay = isTestMode || date === 1 || date === 10
+      const isEntryDay = isTestMode ? true : (date === 1 || date === 10)
       
       // エントリー時間の判定（22:00-23:00）
-      const isEntryTime = hour === 22 && minute < 60
+      // 開発環境では常に受付中として扱う
+      const isEntryTime = isTestMode ? true : (hour === 22 && minute < 60)
       
       if (isEntryDay) {
         setShowForm(true)
         
         if (isEntryTime) {
-          // 22:00-23:00: エントリー受付中
+          // 22:00-23:00: エントリー受付中（開発環境では常に受付中）
           setEntryPhase('accepting')
           setIsEntryOpen(true)
-          const remainingMinutes = 59 - minute
-          const remainingSeconds = 60 - now.getSeconds()
-          setTimeUntilOpen(`残り${remainingMinutes}分${remainingSeconds}秒`)
+          if (isTestMode) {
+            setTimeUntilOpen('開発環境：受付中')
+          } else {
+            const remainingMinutes = 59 - minute
+            const remainingSeconds = 60 - now.getSeconds()
+            setTimeUntilOpen(`残り${remainingMinutes}分${remainingSeconds}秒`)
+          }
         } else if (hour < 22) {
           // エントリー日の22:00前: フォーム入力可能、送信不可
           setEntryPhase('form_only')
@@ -98,30 +103,31 @@ export default function EntryPage() {
           
           if (currentLiveType === 'KUCHIBE') {
             // 口火: 毎月1日
-            if (date === 1) {
-              // 1日なら来月の1日
+            nextDate = 1
+            // 今日が1日以降なら来月の1日
+            if (date >= 1) {
               nextMonth = nextMonth + 1
               if (nextMonth > 11) {
                 nextMonth = 0
                 nextYear = nextYear + 1
               }
             }
-            nextDate = 1
           } else {
             // 二足のわらじ: 毎月10日
-            if (date === 10) {
-              // 10日なら来月の10日
+            nextDate = 10
+            // 今日が10日以降なら来月の10日
+            if (date >= 10) {
               nextMonth = nextMonth + 1
               if (nextMonth > 11) {
                 nextMonth = 0
                 nextYear = nextYear + 1
               }
             }
-            nextDate = 10
           }
           
           const nextEntryDate = new Date(nextYear, nextMonth, nextDate)
-          const daysUntil = Math.ceil((nextEntryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+          const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+          const daysUntil = Math.ceil((nextEntryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
           setTimeUntilOpen(`次回エントリーまで${daysUntil}日`)
         }
       } else {
@@ -139,7 +145,7 @@ export default function EntryPage() {
         if (currentLiveType === 'KUCHIBE') {
           // 口火: 毎月1日
           nextDate = 1
-          if (date > 1) {
+          if (date >= 1) {
             nextMonth = nextMonth + 1
             if (nextMonth > 11) {
               nextMonth = 0
@@ -149,7 +155,7 @@ export default function EntryPage() {
         } else {
           // 二足のわらじ: 毎月10日
           nextDate = 10
-          if (date > 10) {
+          if (date >= 10) {
             nextMonth = nextMonth + 1
             if (nextMonth > 11) {
               nextMonth = 0
@@ -159,7 +165,8 @@ export default function EntryPage() {
         }
         
         const nextEntryDate = new Date(nextYear, nextMonth, nextDate)
-        const daysUntil = Math.ceil((nextEntryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+        const daysUntil = Math.ceil((nextEntryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
         setTimeUntilOpen(`次回エントリーまで${daysUntil}日`)
       }
     }, 1000)
@@ -169,9 +176,10 @@ export default function EntryPage() {
     return () => clearInterval(timer)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const fetchLiveDates = async () => {
+  const fetchLiveDates = async (liveType?: 'KUCHIBE' | 'NIWARA') => {
     try {
-      const response = await fetch(`/api/lives?type=${formData.liveType}`)
+      const typeToFetch = liveType || formData.liveType
+      const response = await fetch(`/api/lives?type=${typeToFetch}`)
       const data = await response.json()
       setDates(data.dates || [])
     } catch (error) {
@@ -287,7 +295,7 @@ export default function EntryPage() {
         <div className="text-center px-4">
           <div className="glass-card max-w-2xl mx-auto">
             <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent animate-gradient">
-              {formData.liveType === 'KUCHIBE' ? '口火ライブ' : '二足のわらじライブ'}
+              {formData.liveType === 'KUCHIBE' ? '口火' : '二足のわらじ'}
             </h1>
             
             <div className="mb-8">
@@ -306,8 +314,9 @@ export default function EntryPage() {
                   <div className="flex items-center gap-3">
                     <span className={`w-3 h-3 rounded-full ${formData.liveType === 'KUCHIBE' ? 'bg-orange-500' : 'bg-blue-500'}`}></span>
                     <div>
-                      <p className="font-semibold text-gray-700">{formData.liveType === 'KUCHIBE' ? '口火ライブ' : '二足のわらじライブ'}</p>
+                      <p className="font-semibold text-gray-700">{formData.liveType === 'KUCHIBE' ? '口火' : '二足のわらじ'}</p>
                       <p className="text-sm text-gray-600">毎月{formData.liveType === 'KUCHIBE' ? '1' : '10'}日 22:00-23:00</p>
+                      <p className="text-xs text-gray-500 mt-1">※エントリーは翌月公演分（7月は8月公演）</p>
                     </div>
                   </div>
                 </div>
@@ -352,7 +361,7 @@ export default function EntryPage() {
                 <button
                   onClick={() => {
                     setFormData({ ...formData, liveType: 'KUCHIBE' })
-                    setTimeout(() => fetchLiveDates(), 100)
+                    fetchLiveDates('KUCHIBE')
                   }}
                   className={`px-6 py-3 rounded-full font-semibold transition-all duration-300 ${
                     formData.liveType === 'KUCHIBE'
@@ -360,12 +369,12 @@ export default function EntryPage() {
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
-                  口火ライブ
+                  口火
                 </button>
                 <button
                   onClick={() => {
                     setFormData({ ...formData, liveType: 'NIWARA' })
-                    setTimeout(() => fetchLiveDates(), 100)
+                    fetchLiveDates('NIWARA')
                   }}
                   className={`px-6 py-3 rounded-full font-semibold transition-all duration-300 ${
                     formData.liveType === 'NIWARA'
@@ -373,13 +382,13 @@ export default function EntryPage() {
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
-                  二足のわらじライブ
+                  二足のわらじ
                 </button>
               </div>
             </div>
 
             <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent animate-gradient">
-              {formData.liveType === 'KUCHIBE' ? '口火ライブ' : '二足のわらじライブ'}
+              {formData.liveType === 'KUCHIBE' ? '口火' : '二足のわらじ'}
             </h1>
             
             <div className="mb-8">
@@ -398,8 +407,9 @@ export default function EntryPage() {
                   <div className="flex items-center gap-3">
                     <span className={`w-3 h-3 rounded-full ${formData.liveType === 'KUCHIBE' ? 'bg-orange-500' : 'bg-blue-500'}`}></span>
                     <div>
-                      <p className="font-semibold text-gray-700">{formData.liveType === 'KUCHIBE' ? '口火ライブ' : '二足のわらじライブ'}</p>
+                      <p className="font-semibold text-gray-700">{formData.liveType === 'KUCHIBE' ? '口火' : '二足のわらじ'}</p>
                       <p className="text-sm text-gray-600">毎月{formData.liveType === 'KUCHIBE' ? '1' : '10'}日 22:00-23:00</p>
+                      <p className="text-xs text-gray-500 mt-1">※エントリーは翌月公演分（7月は8月公演）</p>
                     </div>
                   </div>
                 </div>
@@ -439,9 +449,20 @@ export default function EntryPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent animate-gradient">
-            {formData.liveType === 'KUCHIBE' ? '口火ライブ' : '二足のわらじライブ'}
+            {formData.liveType === 'KUCHIBE' ? '口火' : '二足のわらじ'}
           </h1>
           <p className="text-xl text-gray-600">エントリーフォーム</p>
+          <p className="text-sm text-gray-500 mt-2">
+            {(() => {
+              const date = currentTime.getDate()
+              const month = currentTime.getMonth() + 1
+              if (month === 7 && (date === 1 || date === 10)) {
+                return '※8月公演のエントリー受付'
+              }
+              const nextMonth = month === 12 ? 1 : month + 1
+              return `※${nextMonth}月公演のエントリー受付`
+            })()}
+          </p>
         </div>
         
 
@@ -451,7 +472,7 @@ export default function EntryPage() {
             <button
               onClick={() => {
                 setFormData({ ...formData, liveType: 'KUCHIBE' })
-                setTimeout(() => fetchLiveDates(), 100)
+                fetchLiveDates('KUCHIBE')
               }}
               className={`px-6 py-3 rounded-full font-semibold transition-all duration-300 ${
                 formData.liveType === 'KUCHIBE'
@@ -459,12 +480,12 @@ export default function EntryPage() {
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
-              口火ライブ
+              口火
             </button>
             <button
               onClick={() => {
                 setFormData({ ...formData, liveType: 'NIWARA' })
-                setTimeout(() => fetchLiveDates(), 100)
+                fetchLiveDates('NIWARA')
               }}
               className={`px-6 py-3 rounded-full font-semibold transition-all duration-300 ${
                 formData.liveType === 'NIWARA'
@@ -472,7 +493,7 @@ export default function EntryPage() {
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
-              二足のわらじライブ
+              二足のわらじ
             </button>
           </div>
         </div>
@@ -493,6 +514,52 @@ export default function EntryPage() {
             <div className="space-y-2">
               <p className="text-lg font-semibold text-green-600">エントリー受付中</p>
               <p className="text-sm text-gray-600">{timeUntilOpen}</p>
+            </div>
+          )}
+        </div>
+
+        {/* 募集要項 */}
+        <div className="glass-card mb-6">
+          <h2 className="text-xl font-bold mb-4 text-gray-800">
+            {formData.liveType === 'KUCHIBE' ? '【口火募集要項】' : '【二足のわらじ募集要項】'}
+          </h2>
+          
+          {formData.liveType === 'KUCHIBE' ? (
+            <div className="text-sm text-gray-700 space-y-3">
+              <div className="bg-red-50 p-3 rounded-lg border-l-4 border-red-400">
+                <p className="font-semibold text-red-700 mb-1">重要事項</p>
+                <p>※同じ人は月2回までしか出演できません。</p>
+                <p className="text-xs mt-1">(例:ボニーボニーで1回出演・花﨑ピンで1回出演した場合、花﨑さんはもうその月は出演不可。とくのしんさんはあと1回ピンでも別ユニットでも出演可)</p>
+                <p className="text-xs mt-1">※もし月3回以上出演していることが発覚した場合は、その人は次回以降エントリーをお断りする可能性があります</p>
+              </div>
+              
+              <div className="space-y-2">
+                <p><span className="font-semibold">①</span> 出演される際の名義、希望の日程を1通のDMにまとめて明記の上、@gakuya_jinnoまでDMをお送りください。複数日エントリーする場合や、複数名義エントリーされる場合も1通にまとめてください。送り方を守らなかった方はエントリーから除外します。</p>
+                
+                <p><span className="font-semibold">②</span> 運営の募集開始ポストを待たずとも、開始時間になった時点でエントリーしていただくことが可能です。</p>
+                
+                <p><span className="font-semibold">③</span> 募集中にエントリーを元に振り分け、全日程が埋まった時点で締め切らせていただきます。最低でも1日は出演いただけるように振り分けますが、応募多数のためお断りさせていただく場合がございます。</p>
+                
+                <p><span className="font-semibold">④</span> @gakuya_jinnoから決定した出演日をご連絡させていただきます。こちらからの返信がない場合、不具合の可能性がございますのでリプライかLINEにてご連絡お願いいたします。</p>
+                
+                <p><span className="font-semibold">⑤</span> 複数日ご出演していただくことは可能ですが、1位を取ったからという理由でそれ以降の出演をキャンセルするのはNGです。その場合は代わりの出演者をご自身で探していただき、見つかった場合のみキャンセル可能と致します。</p>
+              </div>
+            </div>
+          ) : (
+            <div className="text-sm text-gray-700 space-y-3">
+              <div className="space-y-2">
+                <p><span className="font-semibold">①</span> 出演される際の名義、希望の日程を1通のDMにまとめて明記の上、@gakuya_jinnoまでDMをお送りください。複数日エントリーする場合や、複数名義エントリーされる場合も1通にまとめてください。送り方を守らなかった方はエントリーから除外します。</p>
+                
+                <p><span className="font-semibold">②</span> 運営の募集開始ポストを待たずとも、開始時間になった時点でエントリーしていただくことが可能です。</p>
+                
+                <p><span className="font-semibold">③</span> 募集中にエントリーを元に振り分け、全日程が埋まった時点で締め切らせていただきます。最低でも1日は出演いただけるように振り分けますが、応募多数のためお断りさせていただく場合がございます。</p>
+                
+                <p><span className="font-semibold">④</span> @gakuya_jinnoから決定した出演日をご連絡させていただきます。こちらからの返信がない場合、不具合の可能性がございますのでリプライかLINEにてご連絡お願いいたします。</p>
+                
+                <p><span className="font-semibold">⑤</span> 複数日ご出場していただくことは可能ですが、1位を取ったからという理由でそれ以降の出演キャンセルするのはNGです。その場合は代わりの出演者をご自身で探していただき、見つかった場合のみキャンセル可能と致します。</p>
+                
+                <p><span className="font-semibold">⑥</span> 過去に1位を獲得した組であっても再度エントリーは可能です。</p>
+              </div>
             </div>
           )}
         </div>

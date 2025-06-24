@@ -33,7 +33,7 @@ export default function CompletePage() {
           
           <p className="text-gray-700 mb-8 text-lg">
             出演の可否は23:00頃に決定予定です。<br />
-            下記で交番表をご確認ください。
+            下記で香盤表をご確認ください。
           </p>
           
           <Link
@@ -41,7 +41,7 @@ export default function CompletePage() {
             className="inline-block btn-primary"
           >
             <span className="flex items-center gap-2">
-              交番表ページへ
+              香盤表ページへ
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
               </svg>
