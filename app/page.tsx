@@ -62,11 +62,12 @@ export default function EntryPage() {
       // エントリー日の判定（1日と10日）
       // 開発環境では常にエントリー日として扱う
       const isTestMode = process.env.NODE_ENV === 'development' || process.env.NEXT_PUBLIC_TEST_MODE === 'true'
-      const isEntryDay = isTestMode ? true : (date === 1 || date === 10)
+      const isStaffReviewMode = process.env.NEXT_PUBLIC_STAFF_REVIEW_MODE === 'true'
+      const isEntryDay = isTestMode || isStaffReviewMode ? true : (date === 1 || date === 10)
       
       // エントリー時間の判定（22:00-23:00）
       // 開発環境では常に受付中として扱う
-      const isEntryTime = isTestMode ? true : (hour === 22 && minute < 60)
+      const isEntryTime = isTestMode || isStaffReviewMode ? true : (hour === 22 && minute < 60)
       
       if (isEntryDay) {
         setShowForm(true)
@@ -77,6 +78,8 @@ export default function EntryPage() {
           setIsEntryOpen(true)
           if (isTestMode) {
             setTimeUntilOpen('開発環境：受付中')
+          } else if (isStaffReviewMode) {
+            setTimeUntilOpen('スタッフ確認モード：常時受付中')
           } else {
             const remainingMinutes = 59 - minute
             const remainingSeconds = 60 - now.getSeconds()
@@ -190,6 +193,12 @@ export default function EntryPage() {
 
   const canSubmit = () => {
     if (!currentTime) return false
+    
+    // スタッフレビューモードでは常に送信可能
+    if (process.env.NEXT_PUBLIC_STAFF_REVIEW_MODE === 'true') {
+      return true
+    }
+    
     const hour = currentTime.getHours()
     const minute = currentTime.getMinutes()
     const date = currentTime.getDate()
