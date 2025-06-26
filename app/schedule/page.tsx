@@ -1,4 +1,6 @@
-import { prisma } from '@/lib/db'
+'use client'
+
+import { useEffect, useState } from 'react'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,40 +20,59 @@ function formatTimeRange(startDateTime: string, liveType: 'KUCHIBE' | 'NIWARA') 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('ja-JP', {
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      timeZone: 'Asia/Tokyo'
     })
   }
   
   return `${formatTime(startDate)}〜${formatTime(endDate)}`
 }
 
-async function getSchedule() {
-  const lives = await prisma.live.findMany({
-    where: {
-      date: {
-        gte: new Date()
-      }
-    },
-    include: {
-      assignments: {
-        include: {
-          entry: true
-        }
-      }
-    },
-    orderBy: {
-      date: 'asc'
-    }
-  })
-
-  return lives
+type Assignment = {
+  id: string
+  nameIndex: number
+  entry: {
+    name1: string
+    name2: string | null
+  }
 }
 
-export default async function SchedulePage() {
-  const lives = await getSchedule()
-  
+type Live = {
+  id: string
+  date: string
+  type: string
+  assignments: Assignment[]
+}
+
+export default function SchedulePage() {
+  const [lives, setLives] = useState<Live[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/schedule')
+      .then(res => res.json())
+      .then(data => {
+        setLives(data.lives || [])
+        setLoading(false)
+      })
+      .catch(() => {
+        setLoading(false)
+      })
+  }, [])
+
   const kuchibeeLives = lives.filter(live => live.type === 'KUCHIBE')
   const niwaraLives = lives.filter(live => live.type === 'NIWARA')
+
+  if (loading) {
+    return (
+      <div className="min-h-screen gradient-bg flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 mx-auto mb-4 border-4 border-gray-600 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-gray-600">読み込み中...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen gradient-bg relative overflow-hidden">
@@ -101,19 +122,20 @@ export default async function SchedulePage() {
                       <div className="mb-3">
                         <div className="flex items-center justify-between mb-1">
                           <h3 className="font-semibold text-lg text-gray-800">
-                            {live.date.toLocaleDateString('ja-JP', {
+                            {new Date(live.date).toLocaleDateString('ja-JP', {
                               year: 'numeric',
                               month: 'long',
                               day: 'numeric',
-                              weekday: 'long'
+                              weekday: 'long',
+                              timeZone: 'Asia/Tokyo'
                             })}
                           </h3>
                           <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">
                             {live.assignments.length}組
                           </span>
                         </div>
-                        <p className="text-orange-600 font-medium">
-                          {formatTimeRange(live.date.toISOString(), live.type as 'KUCHIBE' | 'NIWARA')}
+                        <p className="text-gray-700 font-medium">
+                          {formatTimeRange(live.date, live.type as 'KUCHIBE' | 'NIWARA')}
                         </p>
                       </div>
                       
@@ -167,11 +189,12 @@ export default async function SchedulePage() {
                       <div className="mb-3">
                         <div className="flex items-center justify-between mb-1">
                           <h3 className="font-semibold text-lg text-gray-800">
-                            {live.date.toLocaleDateString('ja-JP', {
+                            {new Date(live.date).toLocaleDateString('ja-JP', {
                               year: 'numeric',
                               month: 'long',
                               day: 'numeric',
-                              weekday: 'long'
+                              weekday: 'long',
+                              timeZone: 'Asia/Tokyo'
                             })}
                           </h3>
                           <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">
