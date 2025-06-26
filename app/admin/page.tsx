@@ -316,8 +316,10 @@ export default function AdminPage() {
       return
     }
 
-    // 日付と時間を結合
-    const dateTimeString = `${newLiveDate}T${newLiveHour}:${newLiveMinute}:00`
+    // 日本時間として入力された日時をUTCに変換
+    // JST (UTC+9) として扱うため、9時間引く
+    const jstDateTimeString = `${newLiveDate}T${newLiveHour}:${newLiveMinute}:00+09:00`
+    const dateTime = new Date(jstDateTimeString)
 
     try {
       const response = await fetch('/api/admin/lives/manage', {
@@ -327,7 +329,7 @@ export default function AdminPage() {
           'Authorization': 'Bearer owarai2025'
         },
         body: JSON.stringify({ 
-          date: dateTimeString,
+          date: dateTime.toISOString(),
           type: selectedType  // 選択中のタブのタイプを使用
         }),
       })
