@@ -201,8 +201,8 @@ export default function SchedulePage() {
                             {live.assignments.length}組
                           </span>
                         </div>
-                        <p className="text-blue-600 font-medium">
-                          {formatTimeRange(live.date.toISOString(), live.type as 'KUCHIBE' | 'NIWARA')}
+                        <p className="text-gray-700 font-medium">
+                          {formatTimeRange(live.date, live.type as 'KUCHIBE' | 'NIWARA')}
                         </p>
                       </div>
                       
