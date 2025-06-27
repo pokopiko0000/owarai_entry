@@ -17,6 +17,9 @@ node_modules/
 .env.development.local
 .env.test.local
 .env.production.local
+.env.backup
+.env.bak
+.env.*backup*
 
 # Database
 prisma/dev.db
