@@ -814,6 +814,7 @@ export default function EntryPage() {
               <p className="text-xs text-gray-500 mt-1">LINEのQRコード画像をアップロードしてください（必須）</p>
               {formData.qrCodeImage && (
                 <div className="mt-2">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img 
                     src={formData.qrCodeImage} 
                     alt="QRコードプレビュー" 

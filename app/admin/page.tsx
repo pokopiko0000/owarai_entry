@@ -14,7 +14,8 @@ type Entry = {
   preference2_1: string | null
   preference2_2: string | null
   preference2_3: string | null
-  email: string
+  lineUrl: string
+  qrCodeImage: string | null
   liveType: string
   timestamp: string
 }
