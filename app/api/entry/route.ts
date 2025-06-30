@@ -8,18 +8,19 @@ export async function POST(request: NextRequest) {
   try {
     data = await request.json()
     
-    // 本番環境: エントリー時間制限
-    const now = new Date()
-    const date = now.getDate()
-    const hour = now.getHours()
-    const minute = now.getMinutes()
-    
-    // 1日または10日の22:00-23:00のみ受付
-    if (!((date === 1 || date === 10) && hour === 22)) {
-      return NextResponse.json(
-        { error: 'エントリー受付時間外です' },
-        { status: 400 }
-      )
+    // 時間制限チェック（開発環境では無効化）
+    if (process.env.NODE_ENV === 'production' && !process.env.DISABLE_TIME_RESTRICTION) {
+      const now = new Date()
+      const date = now.getDate()
+      const hour = now.getHours()
+      
+      // 1日または10日の22:00-23:00のみ受付
+      if (!((date === 1 || date === 10) && hour === 22)) {
+        return NextResponse.json(
+          { error: 'エントリー受付時間外です' },
+          { status: 400 }
+        )
+      }
     }
     
     const entry = await prisma.entry.create({
@@ -35,8 +36,8 @@ export async function POST(request: NextRequest) {
         preference2_1: data.preference2_1 || null,
         preference2_2: data.preference2_2 || null,
         preference2_3: data.preference2_3 || null,
-        email: data.email,
-        lineUrl: data.lineUrl || null,
+        lineUrl: data.lineUrl,
+        qrCodeImage: data.qrCodeImage || null,
         liveType: data.liveType,
       },
     })

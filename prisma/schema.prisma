@@ -20,8 +20,8 @@ model Entry {
   preference2_1 String?
   preference2_2 String?
   preference2_3 String?
-  email         String
-  lineUrl       String?
+  lineUrl       String
+  qrCodeImage   String?
   liveType      LiveType
   timestamp     DateTime  @default(now())
   createdAt     DateTime  @default(now())

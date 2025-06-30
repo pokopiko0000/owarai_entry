@@ -533,7 +533,7 @@ export default function AdminPage() {
                         <th className="text-left py-3 px-4 font-semibold text-gray-700">名義2</th>
                         <th className="text-left py-3 px-4 font-semibold text-gray-700">代表者2</th>
                         <th className="text-left py-3 px-4 font-semibold text-gray-700">希望日2</th>
-                        <th className="text-left py-3 px-4 font-semibold text-gray-700">メール</th>
+                        <th className="text-left py-3 px-4 font-semibold text-gray-700">LINE</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -562,7 +562,39 @@ export default function AdminPage() {
                                 .join(' / ') || '-'
                               : '-'}
                           </td>
-                          <td className="py-3 px-4 text-sm">{entry.email}</td>
+                          <td className="py-3 px-4">
+                            <div className="flex items-center gap-2">
+                              {entry.lineUrl && (
+                                <a
+                                  href={entry.lineUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-800 underline text-sm"
+                                >
+                                  LINE
+                                </a>
+                              )}
+                              {entry.qrCodeImage && (
+                                <button
+                                  onClick={() => {
+                                    const modal = document.createElement('div')
+                                    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'
+                                    modal.onclick = () => modal.remove()
+                                    modal.innerHTML = `
+                                      <div class="bg-white p-4 rounded-lg max-w-sm">
+                                        <img src="${entry.qrCodeImage}" alt="QRコード" class="w-64 h-64 object-contain" />
+                                        <p class="text-center mt-2 text-sm text-gray-600">${entry.name1}</p>
+                                      </div>
+                                    `
+                                    document.body.appendChild(modal)
+                                  }}
+                                  className="text-sm text-purple-600 hover:text-purple-800 underline"
+                                >
+                                  QR
+                                </button>
+                              )}
+                            </div>
+                          </td>
                         </tr>
                       ))}
                     </tbody>

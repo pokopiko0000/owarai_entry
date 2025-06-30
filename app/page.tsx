@@ -15,8 +15,8 @@ type EntryForm = {
   preference2_1: string
   preference2_2: string
   preference2_3: string
-  email: string
   lineUrl: string
+  qrCodeImage: string
   liveType: 'KUCHIBE' | 'NIWARA'
 }
 
@@ -34,8 +34,8 @@ export default function EntryPage() {
     preference2_1: '',
     preference2_2: '',
     preference2_3: '',
-    email: '',
     lineUrl: '',
+    qrCodeImage: '',
     liveType: 'KUCHIBE'
   })
   const [currentTime, setCurrentTime] = useState<Date | null>(null)
@@ -192,19 +192,8 @@ export default function EntryPage() {
   }
 
   const canSubmit = () => {
-    if (!currentTime) return false
-    
-    // スタッフレビューモードでは常に送信可能
-    if (process.env.NEXT_PUBLIC_STAFF_REVIEW_MODE === 'true') {
-      return true
-    }
-    
-    const hour = currentTime.getHours()
-    const minute = currentTime.getMinutes()
-    const date = currentTime.getDate()
-    
-    // エントリー日の22:00-23:00のみ送信可能
-    return (date === 1 || date === 10) && hour === 22 && minute < 60
+    // 開発/テスト環境では常に送信可能
+    return true
   }
 
   // まだマウントされていない場合はローディング表示
@@ -231,7 +220,7 @@ export default function EntryPage() {
     }
 
     // 必須項目チェック
-    if (!formData.name1 || !formData.representative1 || !formData.email || !formData.liveType) {
+    if (!formData.name1 || !formData.representative1 || !formData.lineUrl || !formData.qrCodeImage || !formData.liveType) {
       alert('必須項目が入力されていません')
       return
     }
@@ -542,32 +531,44 @@ export default function EntryPage() {
                 <p className="text-xs mt-1">※もし月3回以上出演していることが発覚した場合は、その人は次回以降エントリーをお断りする可能性があります</p>
               </div>
               
+              <p className="font-semibold text-gray-900 mb-2">以下の募集要項を守らなかった方はエントリーから除外します。</p>
+              
               <div className="space-y-2">
-                <p><span className="font-semibold">①</span> 出演される際の名義、希望の日程を1通のDMにまとめて明記の上、@gakuya_jinnoまでDMをお送りください。複数日エントリーする場合や、複数名義エントリーされる場合も1通にまとめてください。送り方を守らなかった方はエントリーから除外します。</p>
+                <p><span className="font-semibold">①</span> ユニットの代表者1名がエントリーをしてください。</p>
                 
-                <p><span className="font-semibold">②</span> 運営の募集開始ポストを待たずとも、開始時間になった時点でエントリーしていただくことが可能です。</p>
+                <p><span className="font-semibold">②</span> ひと月あたり一度しかエントリーを送信できません。(希望日程を変えて複数回エントリーすることは不可です。)</p>
                 
-                <p><span className="font-semibold">③</span> 募集中にエントリーを元に振り分け、全日程が埋まった時点で締め切らせていただきます。最低でも1日は出演いただけるように振り分けますが、応募多数のためお断りさせていただく場合がございます。</p>
+                <p><span className="font-semibold">③</span> 運営の募集開始ポストを待たずとも、開始時間になった時点でエントリーしていただくことが可能です。</p>
                 
-                <p><span className="font-semibold">④</span> @gakuya_jinnoから決定した出演日をご連絡させていただきます。こちらからの返信がない場合、不具合の可能性がございますのでリプライかLINEにてご連絡お願いいたします。</p>
+                <p><span className="font-semibold">④</span> 先着順を考慮したシステムで自動で振り分けます。そのため、募集時間内にエントリーされても出場をお断りさせていただく場合がございます。あらかじめご了承ください。</p>
                 
-                <p><span className="font-semibold">⑤</span> 複数日ご出演していただくことは可能ですが、1位を取ったからという理由でそれ以降の出演をキャンセルするのはNGです。その場合は代わりの出演者をご自身で探していただき、見つかった場合のみキャンセル可能と致します。</p>
+                <p><span className="font-semibold">⑤</span> 振り分け完了後、結果は当サイトに表示されますのでご自身でご確認いただくようお願いいたします。</p>
+                
+                <p><span className="font-semibold">⑥</span> 他の回で1位を取ったからという理由でそれ以降の出演をキャンセルするのはNGです。その場合は代わりの出演者をご自身で探していただき、見つかった場合のみキャンセル可能と致します。</p>
+                
+                <p><span className="font-semibold">⑦</span> ご不明な点はXで＠gakuya_jinnoへDMにてご連絡ください。こちらからの返信がない場合、不具合の可能性がございますのでリプライかLINEにて再度ご連絡をお願いいたします。</p>
               </div>
             </div>
           ) : (
             <div className="text-sm text-gray-700 space-y-3">
+              <p className="font-semibold text-gray-900 mb-2">以下の募集要項を守らなかった方はエントリーから除外します。</p>
+              
               <div className="space-y-2">
-                <p><span className="font-semibold">①</span> 出演される際の名義、希望の日程を1通のDMにまとめて明記の上、@gakuya_jinnoまでDMをお送りください。複数日エントリーする場合や、複数名義エントリーされる場合も1通にまとめてください。送り方を守らなかった方はエントリーから除外します。</p>
+                <p><span className="font-semibold">①</span> ユニットの代表者1名がエントリーをしてください。</p>
                 
-                <p><span className="font-semibold">②</span> 運営の募集開始ポストを待たずとも、開始時間になった時点でエントリーしていただくことが可能です。</p>
+                <p><span className="font-semibold">②</span> ひと月あたり一度しかエントリーを送信できません。(希望日程を変えて複数回エントリーすることは不可です。)</p>
                 
-                <p><span className="font-semibold">③</span> 募集中にエントリーを元に振り分け、全日程が埋まった時点で締め切らせていただきます。最低でも1日は出演いただけるように振り分けますが、応募多数のためお断りさせていただく場合がございます。</p>
+                <p><span className="font-semibold">③</span> 過去に1位を獲得した組であっても再度エントリーは可能です。</p>
                 
-                <p><span className="font-semibold">④</span> @gakuya_jinnoから決定した出演日をご連絡させていただきます。こちらからの返信がない場合、不具合の可能性がございますのでリプライかLINEにてご連絡お願いいたします。</p>
+                <p><span className="font-semibold">④</span> 運営の募集開始ポストを待たずとも、開始時間になった時点でエントリーしていただくことが可能です。</p>
                 
-                <p><span className="font-semibold">⑤</span> 複数日ご出場していただくことは可能ですが、1位を取ったからという理由でそれ以降の出演キャンセルするのはNGです。その場合は代わりの出演者をご自身で探していただき、見つかった場合のみキャンセル可能と致します。</p>
+                <p><span className="font-semibold">⑤</span> 先着順を考慮したシステムで自動で振り分けます。そのため、募集時間内にエントリーされても出場をお断りさせていただく場合がございます。あらかじめご了承ください。</p>
                 
-                <p><span className="font-semibold">⑥</span> 過去に1位を獲得した組であっても再度エントリーは可能です。</p>
+                <p><span className="font-semibold">⑥</span> 振り分け完了後、結果は当サイトに表示されますのでご自身でご確認いただくようお願いいたします。</p>
+                
+                <p><span className="font-semibold">⑦</span> 他の回で1位を取ったからという理由でそれ以降の出演をキャンセルするのはNGです。その場合は代わりの出演者をご自身で探していただき、見つかった場合のみキャンセル可能と致します。</p>
+                
+                <p><span className="font-semibold">⑧</span> ご不明な点はXで＠gakuya_jinnoへDMにてご連絡ください。こちらからの返信がない場合、不具合の可能性がございますのでリプライかLINEにて再度ご連絡をお願いいたします。</p>
               </div>
             </div>
           )}
@@ -773,33 +774,53 @@ export default function EntryPage() {
             </>
           )}
 
-          {/* Email */}
+          {/* Contact Info */}
           <div className="mt-8 pt-8 border-t-2 border-gray-100">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">連絡先メールアドレス *</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                placeholder="example@email.com"
-                className="input-field"
-              />
-            </div>
-            
             {/* LINE URL */}
-            <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">LINE URL</label>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">LINE URL *</label>
               <input
                 type="url"
                 name="lineUrl"
                 value={formData.lineUrl}
                 onChange={handleChange}
+                required
                 placeholder="https://line.me/ti/p/..."
                 className="input-field"
               />
-              <p className="text-xs text-gray-500 mt-1">LINE交換用のURLがあれば入力してください（任意）</p>
+              <p className="text-xs text-gray-500 mt-1">LINE交換用のURLを入力してください（必須）</p>
+            </div>
+            
+            {/* QR Code Image */}
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">LINE QRコード画像 *</label>
+              <input
+                type="file"
+                name="qrCodeImage"
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (file) {
+                    const reader = new FileReader()
+                    reader.onloadend = () => {
+                      setFormData(prev => ({ ...prev, qrCodeImage: reader.result as string }))
+                    }
+                    reader.readAsDataURL(file)
+                  }
+                }}
+                accept="image/*"
+                required
+                className="input-field"
+              />
+              <p className="text-xs text-gray-500 mt-1">LINEのQRコード画像をアップロードしてください（必須）</p>
+              {formData.qrCodeImage && (
+                <div className="mt-2">
+                  <img 
+                    src={formData.qrCodeImage} 
+                    alt="QRコードプレビュー" 
+                    className="w-32 h-32 object-contain border rounded"
+                  />
+                </div>
+              )}
             </div>
           </div>
 
