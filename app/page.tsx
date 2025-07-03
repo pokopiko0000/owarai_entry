@@ -15,8 +15,6 @@ type EntryForm = {
   preference2_1: string
   preference2_2: string
   preference2_3: string
-  lineUrl: string
-  qrCodeImage: string
   liveType: 'KUCHIBE' | 'NIWARA'
 }
 
@@ -34,8 +32,6 @@ export default function EntryPage() {
     preference2_1: '',
     preference2_2: '',
     preference2_3: '',
-    lineUrl: '',
-    qrCodeImage: '',
     liveType: 'KUCHIBE'
   })
   const [currentTime, setCurrentTime] = useState<Date | null>(null)
@@ -220,7 +216,7 @@ export default function EntryPage() {
     }
 
     // 必須項目チェック
-    if (!formData.name1 || !formData.representative1 || !formData.lineUrl || !formData.qrCodeImage || !formData.liveType) {
+    if (!formData.name1 || !formData.representative1 || !formData.liveType) {
       alert('必須項目が入力されていません')
       return
     }
@@ -774,56 +770,6 @@ export default function EntryPage() {
             </>
           )}
 
-          {/* Contact Info */}
-          <div className="mt-8 pt-8 border-t-2 border-gray-100">
-            {/* LINE URL */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">LINE URL *</label>
-              <input
-                type="url"
-                name="lineUrl"
-                value={formData.lineUrl}
-                onChange={handleChange}
-                required
-                placeholder="https://line.me/ti/p/..."
-                className="input-field"
-              />
-              <p className="text-xs text-gray-500 mt-1">LINE交換用のURLを入力してください（必須）</p>
-            </div>
-            
-            {/* QR Code Image */}
-            <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">LINE QRコード画像 *</label>
-              <input
-                type="file"
-                name="qrCodeImage"
-                onChange={(e) => {
-                  const file = e.target.files?.[0]
-                  if (file) {
-                    const reader = new FileReader()
-                    reader.onloadend = () => {
-                      setFormData(prev => ({ ...prev, qrCodeImage: reader.result as string }))
-                    }
-                    reader.readAsDataURL(file)
-                  }
-                }}
-                accept="image/*"
-                required
-                className="input-field"
-              />
-              <p className="text-xs text-gray-500 mt-1">LINEのQRコード画像をアップロードしてください（必須）</p>
-              {formData.qrCodeImage && (
-                <div className="mt-2">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img 
-                    src={formData.qrCodeImage} 
-                    alt="QRコードプレビュー" 
-                    className="w-32 h-32 object-contain border rounded"
-                  />
-                </div>
-              )}
-            </div>
-          </div>
 
 
           {/* Submit button */}

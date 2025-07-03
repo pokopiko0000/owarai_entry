@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -20,8 +20,6 @@ model Entry {
   preference2_1 String?
   preference2_2 String?
   preference2_3 String?
-  lineUrl       String
-  qrCodeImage   String?
   liveType      LiveType
   timestamp     DateTime  @default(now())
   createdAt     DateTime  @default(now())
