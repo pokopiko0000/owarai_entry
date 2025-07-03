@@ -20,8 +20,8 @@ export async function POST(request: NextRequest) {
     console.log('🗑️ Deleting existing test assignments...')
     const existingTestEntries = await prisma.entry.findMany({
       where: {
-        lineUrl: {
-          contains: 'test'
+        representative1: {
+          contains: 'テスト'
         }
       },
       select: { id: true }
@@ -43,8 +43,8 @@ export async function POST(request: NextRequest) {
     console.log('🗑️ Deleting existing test entries...')
     const deleted = await prisma.entry.deleteMany({
       where: {
-        lineUrl: {
-          contains: 'test'
+        representative1: {
+          contains: 'テスト'
         }
       }
     })
@@ -60,37 +60,37 @@ export async function POST(request: NextRequest) {
     // テストシナリオを作成
     const testScenarios = [
       // シナリオ1: 第1希望で全員配置可能なケース（10組）
-      { name: 'お笑いA', rep: '田中太郎', pref: [liveDates[0]], expectedLive: 0, expectedResult: 'assigned' },
-      { name: 'お笑いB', rep: '佐藤花子', pref: [liveDates[0]], expectedLive: 0, expectedResult: 'assigned' },
-      { name: 'お笑いC', rep: '鈴木一郎', pref: [liveDates[0]], expectedLive: 0, expectedResult: 'assigned' },
-      { name: 'お笑いD', rep: '高橋美咲', pref: [liveDates[0]], expectedLive: 0, expectedResult: 'assigned' },
-      { name: 'お笑いE', rep: '伊藤健太', pref: [liveDates[0]], expectedLive: 0, expectedResult: 'assigned' },
-      { name: 'お笑いF', rep: '渡辺由美', pref: [liveDates[0]], expectedLive: 0, expectedResult: 'assigned' },
-      { name: 'お笑いG', rep: '山本浩二', pref: [liveDates[0]], expectedLive: 0, expectedResult: 'assigned' },
-      { name: 'お笑いH', rep: '中村愛', pref: [liveDates[0]], expectedLive: 0, expectedResult: 'assigned' },
-      { name: 'お笑いI', rep: '小林大輔', pref: [liveDates[0]], expectedLive: 0, expectedResult: 'assigned' },
-      { name: 'お笑いJ', rep: '加藤真理', pref: [liveDates[0]], expectedLive: 0, expectedResult: 'assigned' },
+      { name: 'お笑いA', rep: 'テスト田中太郎', pref: [liveDates[0]], expectedLive: 0, expectedResult: 'assigned' },
+      { name: 'お笑いB', rep: 'テスト佐藤花子', pref: [liveDates[0]], expectedLive: 0, expectedResult: 'assigned' },
+      { name: 'お笑いC', rep: 'テスト鈴木一郎', pref: [liveDates[0]], expectedLive: 0, expectedResult: 'assigned' },
+      { name: 'お笑いD', rep: 'テスト高橋美咲', pref: [liveDates[0]], expectedLive: 0, expectedResult: 'assigned' },
+      { name: 'お笑いE', rep: 'テスト伊藤健太', pref: [liveDates[0]], expectedLive: 0, expectedResult: 'assigned' },
+      { name: 'お笑いF', rep: 'テスト渡辺由美', pref: [liveDates[0]], expectedLive: 0, expectedResult: 'assigned' },
+      { name: 'お笑いG', rep: 'テスト山本浩二', pref: [liveDates[0]], expectedLive: 0, expectedResult: 'assigned' },
+      { name: 'お笑いH', rep: 'テスト中村愛', pref: [liveDates[0]], expectedLive: 0, expectedResult: 'assigned' },
+      { name: 'お笑いI', rep: 'テスト小林大輔', pref: [liveDates[0]], expectedLive: 0, expectedResult: 'assigned' },
+      { name: 'お笑いJ', rep: 'テスト加藤真理', pref: [liveDates[0]], expectedLive: 0, expectedResult: 'assigned' },
 
       // シナリオ2: 定員オーバーで補欠になるケース（12組目、13組目）
-      { name: 'お笑いK', rep: '吉田和也', pref: [liveDates[0]], expectedLive: 0, expectedResult: 'assigned' },
-      { name: 'お笑いL', rep: '山田麻衣', pref: [liveDates[0]], expectedLive: -1, expectedResult: 'waiting' },
-      { name: 'お笑いM', rep: '松本隆', pref: [liveDates[0]], expectedLive: -1, expectedResult: 'waiting' },
+      { name: 'お笑いK', rep: 'テスト吉田和也', pref: [liveDates[0]], expectedLive: 0, expectedResult: 'assigned' },
+      { name: 'お笑いL', rep: 'テスト山田麻衣', pref: [liveDates[0]], expectedLive: -1, expectedResult: 'waiting' },
+      { name: 'お笑いM', rep: 'テスト松本隆', pref: [liveDates[0]], expectedLive: -1, expectedResult: 'waiting' },
 
       // シナリオ3: 第2希望で配置されるケース
-      { name: 'お笑いN', rep: '井上美穂', pref: [liveDates[0], liveDates[1]], expectedLive: 1, expectedResult: 'assigned' },
-      { name: 'お笑いO', rep: '木村拓也', pref: [liveDates[0], liveDates[1]], expectedLive: 1, expectedResult: 'assigned' },
+      { name: 'お笑いN', rep: 'テスト井上美穂', pref: [liveDates[0], liveDates[1]], expectedLive: 1, expectedResult: 'assigned' },
+      { name: 'お笑いO', rep: 'テスト木村拓也', pref: [liveDates[0], liveDates[1]], expectedLive: 1, expectedResult: 'assigned' },
 
       // シナリオ4: 同一名義制限（月1回まで）
-      { name: 'お笑いA', rep: '別の代表者', pref: [liveDates[1]], expectedLive: -1, expectedResult: 'waiting' }, // 既に出演済み
+      { name: 'お笑いA', rep: 'テスト別の代表者', pref: [liveDates[1]], expectedLive: -1, expectedResult: 'waiting' }, // 既に出演済み
 
       // シナリオ5: 同一代表者制限（月2回まで）
-      { name: 'お笑いP', rep: '田中太郎', pref: [liveDates[1]], expectedLive: 1, expectedResult: 'assigned' }, // 1人目OK
-      { name: 'お笑いQ', rep: '田中太郎', pref: [liveDates[2]], expectedLive: -1, expectedResult: 'waiting' }, // 3人目NG
+      { name: 'お笑いP', rep: 'テスト田中太郎', pref: [liveDates[1]], expectedLive: 1, expectedResult: 'assigned' }, // 1人目OK
+      { name: 'お笑いQ', rep: 'テスト田中太郎', pref: [liveDates[2]], expectedLive: -1, expectedResult: 'waiting' }, // 3人目NG
 
       // シナリオ6: 2つエントリー
       { 
-        name: 'お笑いR', rep: '林綾子', pref: [liveDates[1]], expectedLive: 1, expectedResult: 'assigned',
-        name2: 'お笑いS', rep2: '森田剛', pref2: [liveDates[2]], expectedLive2: 2, expectedResult2: 'assigned'
+        name: 'お笑いR', rep: 'テスト林綾子', pref: [liveDates[1]], expectedLive: 1, expectedResult: 'assigned',
+        name2: 'お笑いS', rep2: 'テスト森田剛', pref2: [liveDates[2]], expectedLive2: 2, expectedResult2: 'assigned'
       },
     ]
 
@@ -111,8 +111,6 @@ export async function POST(request: NextRequest) {
         preference2_1: scenario.pref2?.[0] || null,
         preference2_2: scenario.pref2?.[1] || null,
         preference2_3: scenario.pref2?.[2] || null,
-        lineUrl: `https://line.me/ti/p/test${++entryIndex}`,
-        qrCodeImage: null,
         liveType,
         createdAt: new Date(Date.now() - (testEntries.length * 60000)) // createdAtを使用
       }

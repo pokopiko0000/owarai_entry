@@ -16,8 +16,8 @@ export async function POST(request: NextRequest) {
     // 既存のテストエントリーを削除（テスト用のみ）
     await prisma.entry.deleteMany({
       where: {
-        lineUrl: {
-          contains: 'test'
+        representative1: {
+          contains: 'テスト'
         }
       }
     })
@@ -50,12 +50,12 @@ export async function POST(request: NextRequest) {
 
     // テスト用代表者名
     const testRepresentatives = [
-      '田中太郎', '佐藤花子', '鈴木一郎', '高橋美咲', '伊藤健太',
-      '渡辺由美', '山本浩二', '中村愛', '小林大輔', '加藤真理',
-      '吉田和也', '山田麻衣', '松本隆', '井上美穂', '木村拓也',
-      '林綾子', '森田剛', '清水恵子', '山口誠', '橋本直美',
-      '石川達也', '斎藤美香', '後藤健', '坂田優子', '三浦信之',
-      '野村千恵', '神田正男', '菊地沙織', '長谷川進', '福田真由美'
+      'テスト田中太郎', 'テスト佐藤花子', 'テスト鈴木一郎', 'テスト高橋美咲', 'テスト伊藤健太',
+      'テスト渡辺由美', 'テスト山本浩二', 'テスト中村愛', 'テスト小林大輔', 'テスト加藤真理',
+      'テスト吉田和也', 'テスト山田麻衣', 'テスト松本隆', 'テスト井上美穂', 'テスト木村拓也',
+      'テスト林綾子', 'テスト森田剛', 'テスト清水恵子', 'テスト山口誠', 'テスト橋本直美',
+      'テスト石川達也', 'テスト斎藤美香', 'テスト後藤健', 'テスト坂田優子', 'テスト三浦信之',
+      'テスト野村千恵', 'テスト神田正男', 'テスト菊地沙織', 'テスト長谷川進', 'テスト福田真由美'
     ]
 
     const testEntries = []
@@ -82,8 +82,6 @@ export async function POST(request: NextRequest) {
         preference2_1: entryNumber === 2 ? testDates[Math.floor(Math.random() * testDates.length)] : null,
         preference2_2: entryNumber === 2 && Math.random() > 0.3 ? testDates[Math.floor(Math.random() * testDates.length)] : null,
         preference2_3: entryNumber === 2 && Math.random() > 0.6 ? testDates[Math.floor(Math.random() * testDates.length)] : null,
-        lineUrl: `https://line.me/ti/p/test${i + 1}`,
-        qrCodeImage: null,
         liveType,
         timestamp: new Date(Date.now() - Math.floor(Math.random() * 3600000)) // 過去1時間以内のランダムなタイムスタンプ
       }
