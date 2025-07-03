@@ -16,8 +16,8 @@ export async function POST(request: NextRequest) {
     // 既存のテストエントリーを削除（テスト用のみ）
     await prisma.entry.deleteMany({
       where: {
-        representative1: {
-          contains: 'テスト'
+        lineUrl: {
+          contains: 'test'
         }
       }
     })
@@ -82,6 +82,7 @@ export async function POST(request: NextRequest) {
         preference2_1: entryNumber === 2 ? testDates[Math.floor(Math.random() * testDates.length)] : null,
         preference2_2: entryNumber === 2 && Math.random() > 0.3 ? testDates[Math.floor(Math.random() * testDates.length)] : null,
         preference2_3: entryNumber === 2 && Math.random() > 0.6 ? testDates[Math.floor(Math.random() * testDates.length)] : null,
+        lineUrl: `https://line.me/ti/p/test${i + 1}`,
         liveType,
         timestamp: new Date(Date.now() - Math.floor(Math.random() * 3600000)) // 過去1時間以内のランダムなタイムスタンプ
       }

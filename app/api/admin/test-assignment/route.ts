@@ -20,8 +20,8 @@ export async function POST(request: NextRequest) {
     console.log('🗑️ Deleting existing test assignments...')
     const existingTestEntries = await prisma.entry.findMany({
       where: {
-        representative1: {
-          contains: 'テスト'
+        lineUrl: {
+          contains: 'test'
         }
       },
       select: { id: true }
@@ -43,8 +43,8 @@ export async function POST(request: NextRequest) {
     console.log('🗑️ Deleting existing test entries...')
     const deleted = await prisma.entry.deleteMany({
       where: {
-        representative1: {
-          contains: 'テスト'
+        lineUrl: {
+          contains: 'test'
         }
       }
     })
@@ -111,6 +111,7 @@ export async function POST(request: NextRequest) {
         preference2_1: scenario.pref2?.[0] || null,
         preference2_2: scenario.pref2?.[1] || null,
         preference2_3: scenario.pref2?.[2] || null,
+        lineUrl: `https://line.me/ti/p/test${++entryIndex}`,
         liveType,
         createdAt: new Date(Date.now() - (testEntries.length * 60000)) // createdAtを使用
       }

@@ -15,6 +15,7 @@ type EntryForm = {
   preference2_1: string
   preference2_2: string
   preference2_3: string
+  lineUrl: string
   liveType: 'KUCHIBE' | 'NIWARA'
 }
 
@@ -32,6 +33,7 @@ export default function EntryPage() {
     preference2_1: '',
     preference2_2: '',
     preference2_3: '',
+    lineUrl: '',
     liveType: 'KUCHIBE'
   })
   const [currentTime, setCurrentTime] = useState<Date | null>(null)
@@ -216,7 +218,7 @@ export default function EntryPage() {
     }
 
     // 必須項目チェック
-    if (!formData.name1 || !formData.representative1 || !formData.liveType) {
+    if (!formData.name1 || !formData.representative1 || !formData.lineUrl || !formData.liveType) {
       alert('必須項目が入力されていません')
       return
     }
@@ -770,7 +772,23 @@ export default function EntryPage() {
             </>
           )}
 
-
+          {/* Contact Info */}
+          <div className="mt-8 pt-8 border-t-2 border-gray-100">
+            {/* LINE URL */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">LINE URL *</label>
+              <input
+                type="url"
+                name="lineUrl"
+                value={formData.lineUrl}
+                onChange={handleChange}
+                required
+                placeholder="https://line.me/ti/p/..."
+                className="input-field"
+              />
+              <p className="text-xs text-gray-500 mt-1">LINE交換用のURLを入力してください（必須）</p>
+            </div>
+          </div>
 
           {/* Submit button */}
           <button

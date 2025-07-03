@@ -36,6 +36,7 @@ export async function POST(request: NextRequest) {
         preference2_1: data.preference2_1 || null,
         preference2_2: data.preference2_2 || null,
         preference2_3: data.preference2_3 || null,
+        lineUrl: data.lineUrl,
         liveType: data.liveType,
       },
     })
