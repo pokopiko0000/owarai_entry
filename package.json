@@ -10,7 +10,7 @@
     "postinstall": "prisma generate",
     "db:init": "node scripts/init-db.js",
     "db:reset": "prisma migrate reset --force && npm run db:seed",
-    "db:seed": "npx tsx prisma/seed-test.ts"
+    "db:seed": "npx tsx tests/seed-data/seed-test.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.10.1",
@@ -33,6 +33,6 @@
     "typescript": "^5.7.2"
   },
   "prisma": {
-    "seed": "npx tsx prisma/seed.ts"
+    "seed": "npx tsx tests/seed-data/seed.ts"
   }
 }
