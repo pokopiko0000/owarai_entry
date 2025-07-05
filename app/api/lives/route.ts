@@ -46,13 +46,10 @@ export async function GET(request: NextRequest) {
       console.log(`  - ${live.date.toISOString()} (${live.type})`)
     })
     
-    // 8月のデータのみフィルタリング（年は問わない）
-    const lives = testMode ? allLives : allLives.filter(live => {
-      const liveMonth = live.date.getMonth() + 1
-      return liveMonth === 8
-    })
+    // 全てのライブデータを使用（テスト・開発環境では全データ、本番環境でも全データを使用）
+    const lives = allLives
     
-    console.log(`Lives API - Filtered ${lives.length} August lives`)
+    console.log(`Lives API - Using ${lives.length} total lives`)
     
     console.log(`Lives API - Found ${lives.length} lives for type ${liveType}`)
     lives.forEach(live => {
@@ -64,7 +61,7 @@ export async function GET(request: NextRequest) {
         month: 'long',
         day: 'numeric',
         weekday: 'short'
-      }).replace('2025年', '')
+      })
       
       // 時間範囲を追加
       const startTime = live.date.toLocaleTimeString('ja-JP', {
@@ -82,10 +79,10 @@ export async function GET(request: NextRequest) {
       return `${dateStr} ${startTime}〜${endTime}`
     })
     
-    // フォールバック用のテストデータ（翌月の日程）
+    // フォールバック用のテストデータ（データベースにライブが存在しない場合のみ）
     console.log('Lives API - Formatted dates:', dates)
-    if (dates.length === 0 && lives.length === 0) {
-      console.log('Lives API - No data found, using fallback for type:', liveType)
+    if (lives.length === 0) {
+      console.log('Lives API - No data found in database, using fallback for type:', liveType)
       const fallbackDates = liveType === 'KUCHIBE' ? [
         '8月5日(月) 19:00〜20:00',
         '8月8日(木) 19:30〜20:30',
